@@ -9,7 +9,7 @@ import { MsiOptions } from "./options/MsiOptions"
 import { MsiWrappedOptions } from "./options/MsiWrappedOptions"
 import { PkgOptions } from "./options/pkgOptions"
 import { PlatformSpecificBuildOptions } from "./options/PlatformSpecificBuildOptions"
-import { SnapOptions } from "./options/SnapOptions"
+import { SnapcraftOptions, SnapOptions } from "./options/SnapOptions"
 import { SquirrelWindowsOptions } from "./options/SquirrelWindowsOptions"
 import { WindowsConfiguration } from "./options/winOptions"
 import { BuildResult } from "./packager"
@@ -95,9 +95,13 @@ export interface CommonConfiguration {
    */
   readonly deb?: DebOptions | null
   /**
-   * Snap options.
+   * @deprecated Use `snapcraft` instead. Will be removed in a future major release.
    */
   readonly snap?: SnapOptions | null
+  /**
+   * Snapcraft options.
+   */
+  readonly snapcraft?: SnapcraftOptions | null
   /**
    * AppImage options.
    */

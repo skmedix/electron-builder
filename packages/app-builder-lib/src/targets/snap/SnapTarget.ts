@@ -4,7 +4,7 @@ import * as path from "path"
 import { Configuration } from "../../configuration"
 import { Publish, Target } from "../../core"
 import { LinuxPackager } from "../../linuxPackager"
-import { SnapOptions } from "../../options/SnapOptions"
+import { SnapcraftOptions, SnapOptions } from "../../options/SnapOptions"
 import { LinuxTargetHelper } from "../LinuxTargetHelper"
 import { createStageDirPath } from "../targetUtil"
 
@@ -22,7 +22,8 @@ export abstract class SnapCore<T> {
 }
 
 export default class SnapTarget extends Target {
-  readonly options: SnapOptions = { ...this.packager.platformSpecificBuildOptions, ...(this.packager.config as any)[this.name] }
+  // @ts-ignore — intentionally reading the deprecated `snap` fallback via dynamic key
+  readonly options: SnapcraftOptions | SnapOptions = { ...this.packager.platformSpecificBuildOptions, ...(this.packager.config.snapcraft ?? (this.packager.config as any)[this.name]) }
 
   constructor(
     name: string,
@@ -74,8 +75,10 @@ export default class SnapTarget extends Target {
       return fallback
     }
 
-    if (config.snap?.publish) {
-      return this.findSnapPublishConfigInPublishNode(config.snap.publish)
+    // @ts-ignore — intentionally reading the deprecated `snap` fallback
+    const snapConfig = config.snapcraft ?? config.snap
+    if (snapConfig?.publish) {
+      return this.findSnapPublishConfigInPublishNode(snapConfig.publish)
     }
 
     if (config.linux?.publish) {

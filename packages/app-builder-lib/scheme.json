@@ -8425,8 +8425,18 @@
         {
           "type": "null"
         }
+      ]
+    },
+    "snapcraft": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/SnapOptions"
+        },
+        {
+          "type": "null"
+        }
       ],
-      "description": "Snap options."
+      "description": "Snapcraft options."
     },
     "squirrelWindows": {
       "anyOf": [

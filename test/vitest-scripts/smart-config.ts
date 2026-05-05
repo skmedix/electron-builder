@@ -26,7 +26,7 @@ export const UNSTABLE_FAIL_RATIO = 0.2
 // TODO: FIX ALL OF THESE 😅
 export const skippedTests = process.env.SKIPPED_TESTS?.split(",") || [
   // These tests require running on a native Linux environment with Flatpak support
-  "flatpakTest",
+  // "flatpakTest",
   // These tests are run separately due to different docker images used for testing, and they are currently unstable in the CI environment
   // Test via `./test/src/linux/test-snap.sh`
   "snapHeavyTest",
@@ -36,7 +36,6 @@ export const skippedTests = process.env.SKIPPED_TESTS?.split(",") || [
 ]
 export const skipPerOSTests: Record<SupportedPlatforms, string[]> = {
   darwin: ["fpmTest", "macUpdaterTest", "blackboxUpdateTest"],
-  linux: [
-  ],
+  linux: [],
   win32: [],
 }

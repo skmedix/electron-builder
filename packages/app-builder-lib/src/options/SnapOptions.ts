@@ -1,15 +1,19 @@
 import { TargetSpecificOptions } from "../core"
 import { CommonLinuxOptions } from "./linuxOptions"
 
-export interface SnapOptions extends TargetSpecificOptions {
+/**
+ * New-style snap configuration. Use this via the `snapcraft` key in your build config.
+ * Selects the snapcraft core version and its per-core options.
+ */
+export interface SnapcraftOptions extends TargetSpecificOptions {
   /**
    * A snap of type base to be used as the execution environment for this snap. Examples: `core18`, `core20`, `core22`, `core24`.
    * @default core24
    */
   readonly core: "core18" | "core20" | "core22" | "core24" | "custom"
-  readonly core18?: SnapOptionsLegacy | null
-  readonly core20?: SnapOptionsLegacy | null
-  readonly core22?: SnapOptionsLegacy | null
+  readonly core18?: SnapOptions | null
+  readonly core20?: SnapOptions | null
+  readonly core22?: SnapOptions | null
   readonly core24?: SnapOptions24 | null
   /**
    * Pass-through custom snap configuration. electron-builder will read the
@@ -27,7 +31,11 @@ export interface SnapOptionsCustom {
   readonly yamlPath?: string | null
 }
 
-export interface SnapOptionsLegacy extends SnapBaseOptions {
+/**
+ * Flat snap options. Used via the `snap` key in your build config (deprecated path).
+ * Maintained for backward compatibility with electron-builder < 25.
+ */
+export interface SnapOptions extends SnapBaseOptions, TargetSpecificOptions {
   /**
    * Whether to use the pre-built Electron snap template for faster builds.
    * Defaults to `true` when `stagePackages` is not customised.
@@ -119,7 +127,7 @@ export interface SnapBaseOptions extends CommonLinuxOptions {
   readonly summary?: string | null
 
   /**
-   * The quality grade of the snap. It can be either `devel` (i.e. a development version of the snap, so not to be published to the “stable” or “candidate” channels) or “stable” (i.e. a stable release or release candidate, which can be released to all channels).
+   * The quality grade of the snap. It can be either `devel` (i.e. a development version of the snap, so not to be published to the "stable" or "candidate" channels) or "stable" (i.e. a stable release or release candidate, which can be released to all channels).
    * @default stable
    */
   readonly grade?: "devel" | "stable" | null

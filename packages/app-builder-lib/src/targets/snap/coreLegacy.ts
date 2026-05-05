@@ -4,10 +4,10 @@ import { asArray, Nullish } from "builder-util-runtime"
 import { outputFile, readFile } from "fs-extra"
 import { load } from "js-yaml"
 import * as path from "path"
-import { PlugDescriptor, SnapOptionsLegacy } from "../../options/SnapOptions"
+import { PlugDescriptor, SnapOptions } from "../../options/SnapOptions"
 import { SnapCore } from "./SnapTarget"
 
-export class SnapCoreLegacy extends SnapCore<SnapOptionsLegacy> {
+export class SnapCoreLegacy extends SnapCore<SnapOptions> {
   private isUseTemplateApp = false
 
   defaultPlugs = ["desktop", "desktop-legacy", "home", "x11", "wayland", "unity7", "browser-support", "network", "gsettings", "audio-playback", "pulseaudio", "opengl"]

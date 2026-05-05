@@ -9,7 +9,7 @@ import * as which from "which"
 //     "snap" the snapd client is absent but "snapcraft" is present), OR
 //   - the "snap" snapd client is found in PATH (native Linux install), OR
 //   - the "snapcraft" CLI is found in PATH (e.g. installed via pip / brew)
-const hasSnapInstalled = () => process.env.RUN_SNAP_TESTS === "true" || which.sync("snap", { nothrow: true }) != null || which.sync("snapcraft", { nothrow: true }) != null
+export const hasSnapInstalled = () => process.env.RUN_SNAP_TESTS === "true" || which.sync("snap", { nothrow: true }) != null || which.sync("snapcraft", { nothrow: true }) != null
 
 // Optional core filter: SNAP_TEST_CORES=core24  (comma-separated)
 // When unset every core is tested.
@@ -28,7 +28,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap heavy", { sequential: true, timeo
             name: "se-wo-template",
           },
           productName: "Snap Electron App (full build)",
-          snap: {
+          snapcraft: {
             core,
           },
           electronFuses: {
@@ -55,9 +55,6 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap heavy", { sequential: true, timeo
               name: "se-wo-template",
             },
             productName: "Snap Electron App (full build)",
-            snap: {
-              core,
-            },
           },
         }))
     }
