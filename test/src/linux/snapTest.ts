@@ -1,4 +1,6 @@
 import { Arch, Platform } from "electron-builder"
+import { outputFile } from "fs-extra"
+import * as path from "path"
 import { app, assertPack, snapTarget } from "../helpers/packTester"
 
 test.ifNotWindows("snap", ({ expect }) =>
@@ -45,11 +47,14 @@ test.ifNotWindows("default stagePackages", async ({ expect }) => {
         },
         productName: "Sep",
         snap: {
-          stagePackages: p,
-          plugs: p,
-          confinement: "classic",
-          // otherwise "parts" will be removed
-          useTemplateApp: false,
+          core: "core22",
+          core22: {
+            stagePackages: p,
+            plugs: p,
+            confinement: "classic",
+            // otherwise "parts" will be removed
+            useTemplateApp: false,
+          },
         },
       },
       effectiveOptionComputed: async ({ snap, args }) => {
@@ -71,7 +76,10 @@ test.ifNotWindows("classic confinement", ({ expect }) =>
       },
       productName: "Snap Electron App (classic confinement)",
       snap: {
-        confinement: "classic",
+        core: "core22",
+        core22: {
+          confinement: "classic",
+        },
       },
     },
   })
@@ -86,9 +94,12 @@ test.ifNotWindows("buildPackages", async ({ expect }) => {
       },
       productName: "Sep",
       snap: {
-        buildPackages: ["foo1", "default", "foo2"],
-        // otherwise "parts" will be removed
-        useTemplateApp: false,
+        core: "core22",
+        core22: {
+          buildPackages: ["foo1", "default", "foo2"],
+          // otherwise "parts" will be removed
+          useTemplateApp: false,
+        },
       },
     },
     effectiveOptionComputed: async ({ snap }) => {
@@ -122,9 +133,12 @@ test.ifNotWindows("plugs option", async ({ expect }) => {
       targets: snapTarget,
       config: {
         snap: {
-          plugs: p,
-          // otherwise "parts" will be removed
-          useTemplateApp: false,
+          core: "core22",
+          core22: {
+            plugs: p,
+            // otherwise "parts" will be removed
+            useTemplateApp: false,
+          },
         },
       },
       effectiveOptionComputed: async ({ snap, args }) => {
@@ -158,7 +172,10 @@ test.ifNotWindows("slots option", async ({ expect }) => {
         },
         productName: "Sep",
         snap: {
-          slots,
+          core: "core22",
+          core22: {
+            slots,
+          },
         },
       },
       effectiveOptionComputed: async ({ snap }) => {
@@ -178,8 +195,11 @@ test.ifNotWindows("custom env", ({ expect }) =>
       },
       productName: "Sep",
       snap: {
-        environment: {
-          FOO: "bar",
+        core: "core22",
+        core22: {
+          environment: {
+            FOO: "bar",
+          },
         },
       },
     },
@@ -199,7 +219,10 @@ test.ifNotWindows("custom after, no desktop", ({ expect }) =>
       },
       productName: "Sep",
       snap: {
-        after: ["bar"],
+        core: "core22",
+        core22: {
+          after: ["bar"],
+        },
       },
     },
     effectiveOptionComputed: async ({ snap }) => {
@@ -218,7 +241,10 @@ test.ifNotWindows("no desktop plugs", ({ expect }) =>
       },
       productName: "Sep",
       snap: {
-        plugs: ["foo", "bar"],
+        core: "core22",
+        core22: {
+          plugs: ["foo", "bar"],
+        },
       },
     },
     effectiveOptionComputed: async ({ snap, args }) => {
@@ -238,7 +264,10 @@ test.ifNotWindows("auto start", ({ expect }) =>
       },
       productName: "Sep",
       snap: {
-        autoStart: true,
+        core: "core22",
+        core22: {
+          autoStart: true,
+        },
       },
     },
     effectiveOptionComputed: async ({ snap }) => {
@@ -274,8 +303,11 @@ test.ifNotWindows("compression option", ({ expect }) =>
       },
       productName: "Sep",
       snap: {
-        useTemplateApp: false,
-        compression: "xz",
+        core: "core22",
+        core22: {
+          useTemplateApp: false,
+          compression: "xz",
+        },
       },
     },
     effectiveOptionComputed: async ({ snap, args }) => {
@@ -307,7 +339,10 @@ test.ifNotWindows("base option", ({ expect }) =>
     config: {
       productName: "Sep",
       snap: {
-        base: "core22",
+        core: "core22",
+        core22: {
+          base: "core22",
+        },
       },
     },
     effectiveOptionComputed: async ({ snap }) => {
@@ -323,8 +358,11 @@ test.ifNotWindows("use template app", ({ expect }) =>
     targets: snapTarget,
     config: {
       snap: {
-        useTemplateApp: true,
-        compression: "xz",
+        core: "core22",
+        core22: {
+          useTemplateApp: true,
+          compression: "xz",
+        },
       },
     },
     effectiveOptionComputed: async ({ snap, args }) => {
@@ -342,3 +380,135 @@ test.ifNotWindows("use template app", ({ expect }) =>
     },
   })
 )
+
+// ─── core24 tests ────────────────────────────────────────────────────────────
+
+test.ifNotWindows("core24 default (gnome extension)", ({ expect }) =>
+  app(expect, {
+    targets: snapTarget,
+    config: {
+      extraMetadata: { name: "sep" },
+      productName: "Sep",
+      snap: { core: "core24" },
+    },
+    effectiveOptionComputed: async ({ snap }) => {
+      expect(snap).toMatchSnapshot()
+      expect(snap.base).toBe("core24")
+      expect(snap.apps?.sep?.extensions).toContain("gnome")
+      return Promise.resolve(true)
+    },
+  })
+)
+
+test.ifNotWindows("core24 no gnome extension", ({ expect }) =>
+  app(expect, {
+    targets: snapTarget,
+    config: {
+      extraMetadata: { name: "sep" },
+      productName: "Sep",
+      snap: {
+        core: "core24",
+        core24: { useGnomeExtension: false },
+      },
+    },
+    effectiveOptionComputed: async ({ snap }) => {
+      expect(snap).toMatchSnapshot()
+      expect(snap.base).toBe("core24")
+      // Without GNOME extension, manual content snaps must be defined at root level
+      expect(snap.plugs).toBeDefined()
+      expect(snap.apps?.sep?.extensions).toBeUndefined()
+      return Promise.resolve(true)
+    },
+  })
+)
+
+test.ifNotWindows("core24 wayland disabled", ({ expect }) =>
+  app(expect, {
+    targets: snapTarget,
+    config: {
+      extraMetadata: { name: "sep" },
+      productName: "Sep",
+      snap: {
+        core: "core24",
+        core24: { allowNativeWayland: false },
+      },
+    },
+    effectiveOptionComputed: async ({ snap }) => {
+      expect(snap).toMatchSnapshot()
+      expect(snap.apps?.sep?.environment?.["DISABLE_WAYLAND"]).toBe("1")
+      return Promise.resolve(true)
+    },
+  })
+)
+
+test.ifNotWindows("core24 custom plugs with default expansion", ({ expect }) =>
+  app(expect, {
+    targets: snapTarget,
+    config: {
+      extraMetadata: { name: "sep" },
+      productName: "Sep",
+      snap: {
+        core: "core24",
+        core24: {
+          plugs: ["default", "camera"],
+        },
+      },
+    },
+    effectiveOptionComputed: async ({ snap }) => {
+      expect(snap).toMatchSnapshot()
+      // "default" should expand to the full default plug list plus "camera"
+      const appPlugs = snap.apps?.sep?.plugs ?? []
+      expect(appPlugs).toContain("camera")
+      expect(appPlugs).toContain("desktop")
+      return Promise.resolve(true)
+    },
+  })
+)
+
+test.ifNotWindows("custom snap yamlPath pass-through", async ({ expect }) => {
+  await assertPack(
+    expect,
+    "test-app-one",
+    {
+      targets: snapTarget,
+      config: {
+        extraMetadata: { name: "sep" },
+        productName: "Sep",
+        snap: {
+          core: "custom",
+          custom: { yamlPath: "custom-snapcraft.yaml" },
+        },
+      },
+      effectiveOptionComputed: ({ snap }) => {
+        expect(snap).toMatchSnapshot()
+        // electron-builder must not inject any extra plugs or extensions
+        expect(snap.name).toBe("sep")
+        expect(snap.base).toBe("core24")
+        return Promise.resolve(true)
+      },
+    },
+    {
+      projectDirCreated: async projectDir => {
+        // Write a minimal valid snapcraft.yaml that electron-builder should pass through unchanged
+        const customYaml = [
+          "name: sep",
+          "base: core24",
+          "version: '1.0.0'",
+          "summary: Custom snap (pass-through)",
+          "description: |",
+          "  Built with a custom snapcraft.yaml via electron-builder.",
+          "confinement: strict",
+          "grade: stable",
+          "parts:",
+          "  app:",
+          "    plugin: dump",
+          "    source: .",
+          "apps:",
+          "  sep:",
+          "    command: sep",
+        ].join("\n")
+        await outputFile(path.join(projectDir, "build", "custom-snapcraft.yaml"), customYaml)
+      },
+    }
+  )
+})
