@@ -343,11 +343,25 @@ jobs:
           sudo apt-get install -y rpm flatpak flatpak-builder snapd
           sudo snap install snapcraft --classic
 
-      - name: Test
+      - name: Test flatpak
         run: |
           pnpm ci:test
         env:
-          TEST_FILES: flatpakTest,snapHeavyTest,snapTest
+          TEST_FILES: flatpakTest
+          VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
+          RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
+
+      - name: Test snap core 18, 20, 22
+        run: |
+          SKIP_CORE24=1 ./test/src/linux/test-snap.sh
+        env:
+          VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
+          RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
+
+      - name: Test snap core 24
+        run: |
+          SKIP_LEGACY=1 ./test/src/linux/test-snap.sh
+        env:
           VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
           RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
 

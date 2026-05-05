@@ -29,6 +29,12 @@ export const skippedTests = [
 ]
 export const skipPerOSTests: Record<SupportedPlatforms, string[]> = {
   darwin: ["fpmTest", "macUpdaterTest", "blackboxUpdateTest"],
-  linux: [],
+  linux: [
+    // These tests require running on a native Linux environment with Flatpak support
+    "flatpakTest",
+    // These tests are run separately due to different docker images used for testing, and they are currently unstable in the CI environment
+    // Test via `./test/src/linux/test-snap.sh`
+    "snapHeavyTest", "snapTest"
+  ],
   win32: [],
 }
