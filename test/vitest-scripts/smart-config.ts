@@ -24,7 +24,7 @@ export const IS_LINUX = PLATFORM === "linux"
 export const UNSTABLE_FAIL_RATIO = 0.2
 // Add here broken tests to exclude from smart sharding
 // TODO: FIX ALL OF THESE 😅
-export const skippedTests = [
+export const skippedTests = process.env.SKIPPED_TESTS?.split(",") || [
   // These tests require running on a native Linux environment with Flatpak support
   "flatpakTest",
   // These tests are run separately due to different docker images used for testing, and they are currently unstable in the CI environment

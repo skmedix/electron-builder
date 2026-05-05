@@ -54,8 +54,9 @@ CWD=$(dirname "$0")
 # Resolve absolute repo root (three levels up: linux/ → src/ → test/ → .)
 REPO_ROOT=$(cd "$CWD/../../.." && pwd)
 
-export TEST_FILES="snapHeavyTest"
+export TEST_FILES="snapTest,snapHeavyTest"
 export DEBUG="${DEBUG:-electron-builder}"
+export SKIPPED_TESTS=""
 
 # Common docker flags forwarded to every test run.
 #

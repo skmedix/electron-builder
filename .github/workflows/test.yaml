@@ -347,6 +347,7 @@ jobs:
         run: |
           pnpm ci:test
         env:
+          SKIPPED_TESTS: ''
           TEST_FILES: flatpakTest
           VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
           RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
