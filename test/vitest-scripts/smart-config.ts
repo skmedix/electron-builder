@@ -25,16 +25,18 @@ export const UNSTABLE_FAIL_RATIO = 0.2
 // Add here broken tests to exclude from smart sharding
 // TODO: FIX ALL OF THESE 😅
 export const skippedTests = [
+  // These tests require running on a native Linux environment with Flatpak support
+  "flatpakTest",
+  // These tests are run separately due to different docker images used for testing, and they are currently unstable in the CI environment
+  // Test via `./test/src/linux/test-snap.sh`
+  "snapHeavyTest",
+  "snapTest",
   // General instability
+  // NO TESTS
 ]
 export const skipPerOSTests: Record<SupportedPlatforms, string[]> = {
   darwin: ["fpmTest", "macUpdaterTest", "blackboxUpdateTest"],
   linux: [
-    // These tests require running on a native Linux environment with Flatpak support
-    "flatpakTest",
-    // These tests are run separately due to different docker images used for testing, and they are currently unstable in the CI environment
-    // Test via `./test/src/linux/test-snap.sh`
-    "snapHeavyTest", "snapTest"
   ],
   win32: [],
 }
