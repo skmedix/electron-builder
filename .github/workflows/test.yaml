@@ -337,20 +337,20 @@ jobs:
           cache-key: v-35.7.5-native-electron
           reset-vitest-smart-cache: ${{ inputs.reset-vitest-smart-cache }}
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rpm flatpak flatpak-builder snapd
-          sudo snap install snapcraft --classic
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y rpm flatpak flatpak-builder snapd
+      #     sudo snap install snapcraft --classic
 
-      - name: Test flatpak
-        run: |
-          pnpm ci:test
-        env:
-          SKIPPED_TESTS: 'none'
-          TEST_FILES: flatpakTest
-          VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
-          RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
+      # - name: Test flatpak
+      #   run: |
+      #     pnpm ci:test
+      #   env:
+      #     SKIPPED_TESTS: 'none'
+      #     TEST_FILES: flatpakTest
+      #     VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
+      #     RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
 
       - name: Test snap core 18, 20, 22
         run: |

@@ -23,7 +23,10 @@ export abstract class SnapCore<T> {
 
 export default class SnapTarget extends Target {
   // @ts-ignore — intentionally reading the deprecated `snap` fallback via dynamic key
-  readonly options: SnapcraftOptions | SnapOptions = { ...this.packager.platformSpecificBuildOptions, ...(this.packager.config.snapcraft ?? (this.packager.config as any)[this.name]) }
+  readonly options: SnapcraftOptions | SnapOptions = {
+    ...this.packager.platformSpecificBuildOptions,
+    ...(this.packager.config.snapcraft ?? (this.packager.config as any)[this.name]),
+  }
 
   constructor(
     name: string,
