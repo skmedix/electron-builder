@@ -8,32 +8,6 @@ import { buildSnap } from "./snapcraftBuilder"
 import * as yaml from "js-yaml"
 import { Nullish } from "builder-util-runtime"
 
-// Mapping of SnapOptions to SnapcraftYAML
-export interface SnapOptionsMapping {
-  base: SnapcraftYAML["base"]
-  confinement: SnapcraftYAML["confinement"]
-  environment: SnapcraftYAML["environment"]
-  summary: SnapcraftYAML["summary"]
-  grade: SnapcraftYAML["grade"]
-  assumes: SnapcraftYAML["assumes"]
-  hooks: SnapcraftYAML["hooks"]
-  plugs: SnapcraftYAML["plugs"]
-  slots: SnapcraftYAML["slots"]
-  layout: SnapcraftYAML["layout"]
-  title: SnapcraftYAML["title"]
-  compression: SnapcraftYAML["compression"]
-
-  buildPackages: Part["build-packages"]
-  stagePackages: Part["stage-packages"]
-  after: Part["after"]
-  appPartStage: Part["stage"]
-
-  autoStart: App["autostart"]
-
-  // Extension support
-  useGnomeExtension: boolean
-}
-
 const defaultStagePackages = ["libnspr4", "libnss3", "libxss1", "libappindicator3-1", "libsecret-1-0"]
 
 export class SnapCore24 extends SnapCore<SnapOptions24> {
@@ -147,10 +121,17 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
     const appInfo = this.packager.appInfo
     const appName = this.packager.executableName.toLowerCase()
     const options = this.options
-    // GNOME extension cannot be used with host/destructive-mode: it tries to pull
-    // /usr/share/snapcraft/extensions/desktop/command-chain as a source, which fails
-    // because snapcraft cannot determine the source type in that environment.
-    const useGnomeExtension = options.useGnomeExtension !== false && !this.isHostMode()
+    // Resolve the extension list. Default to ["gnome"] when the user has not set anything.
+    // In host/destructive-mode the gnome extension fails because snapcraft tries to pull
+    // /usr/share/snapcraft/extensions/desktop/command-chain as a local source and cannot
+    // determine the source type; strip it automatically and warn.
+    let extensionsList: string[] = options.extensions != null ? [...options.extensions] : ["gnome"]
+    if (this.isHostMode() && extensionsList.includes("gnome")) {
+      log.warn(null, "gnome snapcraft extension is not supported in host/destructive-mode — removing it from the extension list")
+      extensionsList = extensionsList.filter(e => e !== "gnome")
+    }
+    const resolvedExtensions = extensionsList.length > 0 ? extensionsList : undefined
+    const useGnomeExtension = extensionsList.includes("gnome")
 
     // Create the app part
     const appPart: Part = {
@@ -224,8 +205,7 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       slots: appSlots,
       autostart: options.autoStart ? `${appName}.desktop` : undefined,
       desktop: `meta/gui/${appName}.desktop`,
-      // Add GNOME extension to the app if enabled
-      extensions: useGnomeExtension ? ["gnome"] : undefined,
+      extensions: resolvedExtensions,
     }
 
     // Icon path in the top-level metadata
@@ -277,9 +257,8 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       // Environment
       environment: this.buildEnvironment(options),
 
-      // Layout - only add custom layout if NOT using GNOME extension
-      // The extension provides its own layout
-      layout: useGnomeExtension ? (options.layout ?? undefined) : this.buildDefaultLayout(options),
+      // User-supplied layout always wins. Without gnome extension, fall back to content-snap defaults.
+      layout: options.layout ?? (useGnomeExtension ? undefined : this.buildDefaultLayout(options)),
 
       // Interfaces
       plugs: rootPlugs,

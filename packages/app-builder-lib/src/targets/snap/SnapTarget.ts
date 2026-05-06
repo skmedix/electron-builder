@@ -22,11 +22,7 @@ export abstract class SnapCore<T> {
 }
 
 export default class SnapTarget extends Target {
-  // @ts-ignore — intentionally reading the deprecated `snap` fallback via dynamic key
-  readonly options: SnapcraftOptions | SnapOptions = {
-    ...this.packager.platformSpecificBuildOptions,
-    ...(this.packager.config.snapcraft ?? (this.packager.config as any)[this.name]),
-  }
+  readonly options: SnapcraftOptions | SnapOptions
 
   constructor(
     name: string,
@@ -35,6 +31,17 @@ export default class SnapTarget extends Target {
     readonly outDir: string
   ) {
     super(name)
+
+    const {
+      config: { snapcraft, snap },
+      platformSpecificBuildOptions,
+    } = packager
+    const { compression: _ignored, ...overlappingOptions } = platformSpecificBuildOptions
+
+    this.options = {
+      ...overlappingOptions,
+      ...(snapcraft ?? snap), // support deprecated `snap` config for backward compatibility
+    }
   }
 
   async build(appOutDir: string, arch: Arch): Promise<any> {
@@ -78,7 +85,6 @@ export default class SnapTarget extends Target {
       return fallback
     }
 
-    // @ts-ignore — intentionally reading the deprecated `snap` fallback
     const snapConfig = config.snapcraft ?? config.snap
     if (snapConfig?.publish) {
       return this.findSnapPublishConfigInPublishNode(snapConfig.publish)

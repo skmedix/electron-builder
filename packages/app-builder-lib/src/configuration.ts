@@ -95,7 +95,8 @@ export interface CommonConfiguration {
    */
   readonly deb?: DebOptions | null
   /**
-   * @deprecated Use `snapcraft` instead. Will be removed in a future major release.
+   * @deprecated Use `snapcraft` instead, which supersedes any `snap` configuration.
+   * Will be removed in a future major release.
    */
   readonly snap?: SnapOptions | null
   /**

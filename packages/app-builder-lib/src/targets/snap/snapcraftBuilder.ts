@@ -258,6 +258,15 @@ export async function buildSnap(options: BuildSnapOptions): Promise<string> {
     const files = await readdir(projectAppDir)
     log.debug({ appFiles: files.slice(0, 20) }, "app directory contents (truncated)")
 
+    // Validate build environment selection on non-Linux hosts where snapcraft has no fallback.
+    if (!remoteBuild?.enabled && !useLXD && !useMultipass && !useDestructiveMode && process.platform !== "linux") {
+      throw new Error(
+        `No snap build environment specified for ${process.platform}. ` +
+          `Set one of: snapcraft.core24.useMultipass, snapcraft.core24.useLXD (Linux only), ` +
+          `or snapcraft.core24.remoteBuild.enabled`
+      )
+    }
+
     progress.logStage("building", "running snapcraft build", 70)
     const snapFilePath = await executeWithRetry(
       () =>
@@ -265,9 +274,9 @@ export async function buildSnap(options: BuildSnapOptions): Promise<string> {
           workDir: stageDir,
           remoteBuild,
           outputSnap: artifactPath,
-          useLXD: useLXD, //|| (isLinux && !useDestructiveMode && !useMultipass && !remoteBuild?.enabled),
-          useMultipass: useMultipass, //|| ((isMac || isWindows) && !remoteBuild?.enabled),
-          useDestructiveMode: useDestructiveMode, //&& isLinux && !remoteBuild?.enabled,
+          useLXD,
+          useMultipass,
+          useDestructiveMode,
           env,
         }),
       {

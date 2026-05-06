@@ -47,7 +47,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
           },
           productName: "Sep",
           snapcraft: {
-            core: "core22",
+            base: "core22",
             core22: {
               stagePackages: p,
               plugs: p,
@@ -76,7 +76,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Snap Electron App (classic confinement)",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             confinement: "classic",
           },
@@ -93,7 +93,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             buildPackages: ["foo1", "default", "foo2"],
             // otherwise "parts" will be removed
@@ -132,7 +132,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         targets: snapTarget,
         config: {
           snapcraft: {
-            core: "core22",
+            base: "core22",
             core22: {
               plugs: p,
               // otherwise "parts" will be removed
@@ -171,7 +171,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
           },
           productName: "Sep",
           snapcraft: {
-            core: "core22",
+            base: "core22",
             core22: {
               slots,
             },
@@ -194,7 +194,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             environment: {
               FOO: "bar",
@@ -217,7 +217,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             after: ["bar"],
           },
@@ -238,7 +238,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             plugs: ["foo", "bar"],
           },
@@ -260,7 +260,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             autoStart: true,
           },
@@ -297,7 +297,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         },
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             useTemplateApp: false,
             compression: "xz",
@@ -331,7 +331,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       config: {
         productName: "Sep",
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             base: "core22",
           },
@@ -349,7 +349,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       targets: snapTarget,
       config: {
         snapcraft: {
-          core: "core22",
+          base: "core22",
           core22: {
             useTemplateApp: true,
             compression: "xz",
@@ -379,7 +379,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       config: {
         extraMetadata: { name: "sep" },
         productName: "Sep",
-        snapcraft: { core: "core24" },
+        snapcraft: { base: "core24" },
       },
       effectiveOptionComputed: async ({ snap }) => {
         expect(snap).toMatchSnapshot()
@@ -396,8 +396,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         extraMetadata: { name: "sep" },
         productName: "Sep",
         snapcraft: {
-          core: "core24",
-          core24: { useGnomeExtension: false },
+          base: "core24",
         },
       },
       effectiveOptionComputed: async ({ snap }) => {
@@ -417,7 +416,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         extraMetadata: { name: "sep" },
         productName: "Sep",
         snapcraft: {
-          core: "core24",
+          base: "core24",
           core24: { allowNativeWayland: false },
         },
       },
@@ -435,7 +434,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         extraMetadata: { name: "sep" },
         productName: "Sep",
         snapcraft: {
-          core: "core24",
+          base: "core24",
           core24: {
             plugs: ["default", "camera"],
           },
@@ -461,7 +460,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
           extraMetadata: { name: "sep" },
           productName: "Sep",
           snapcraft: {
-            core: "custom",
+            base: "custom",
             custom: { yamlPath: "custom-snapcraft.yaml" },
           },
         },

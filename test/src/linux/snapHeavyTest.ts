@@ -29,7 +29,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap heavy", { sequential: true, timeo
           },
           productName: "Snap Electron App (full build)",
           snapcraft: {
-            core,
+            base: core,
           },
           electronFuses: {
             runAsNode: true,

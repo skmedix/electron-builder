@@ -6151,7 +6151,7 @@
         "slots": {
           "anyOf": [
             {
-              "$ref": "#/definitions/PlugDescriptor"
+              "$ref": "#/definitions/SlotDescriptor"
             },
             {
               "items": {
@@ -6216,6 +6216,7 @@
     },
     "SnapOptions24": {
       "additionalProperties": false,
+      "description": "Options for building a core24 snap. This is a fresh, forward-looking interface that does\nnot extend the legacy `SnapBaseOptions`. It inherits desktop-entry fields from\n`CommonLinuxOptions` (categories, mimeTypes, executableArgs, etc.) and publish\nconfiguration from `TargetSpecificOptions`.",
       "properties": {
         "after": {
           "anyOf": [
@@ -6229,11 +6230,11 @@
               "type": "null"
             }
           ],
-          "description": "Specifies any [parts](https://snapcraft.io/docs/reference/parts) that should be built before this part.\nDefaults to `[\"desktop-gtk2\"\"]`.\n\nIf list contains `default`, it will be replaced to default list, so, `[\"default\", \"foo\"]` can be used to add custom parts `foo` in addition to defaults."
+          "description": "Names of other snapcraft parts that must be built before the app part."
         },
         "allowNativeWayland": {
           "default": true,
-          "description": "Whether or not to enable Wayland support natively.",
+          "description": "Allow running the application with native Wayland support (`--ozone-platform=wayland`).\nFor core24 this defaults to `true`. Set to `false` to force X11 mode via XWayland.",
           "type": [
             "null",
             "boolean"
@@ -6251,7 +6252,14 @@
               "type": "null"
             }
           ],
-          "description": "Specifies which files from the app part to stage and which to exclude. Individual files, directories, wildcards, globstars, and exclusions are accepted. See [Snapcraft filesets](https://snapcraft.io/docs/snapcraft-filesets) to learn more about the format.\n\nThe defaults can be found in [snapcraft.ts](https://github.com/electron-userland/electron-builder/blob/master/packages/app-builder-lib/src/targets/snap/snapcraft.ts)."
+          "description": "Filesets controlling which files from the app part are staged into the snap.\nSupports glob patterns and exclusions. See [filesets](https://snapcraft.io/docs/snapcraft-filesets)."
+        },
+        "artifactName": {
+          "description": "The [artifact file name template](./configuration.md#artifact-file-name-template).",
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "assumes": {
           "anyOf": [
@@ -6268,19 +6276,12 @@
               ]
             }
           ],
-          "description": "The list of features that must be supported by the core in order for this snap to install."
+          "description": "Features that must be supported by the host snapd before the snap can be installed.\nSee [assumes](https://snapcraft.io/docs/snapcraft-yaml-reference#assumes)."
         },
         "autoStart": {
           "default": false,
-          "description": "Whether or not the snap should automatically start on login.",
+          "description": "Whether the app should auto-start on login (creates an autostart desktop entry).",
           "type": "boolean"
-        },
-        "base": {
-          "description": "A snap of type base to be used as the execution environment for this snap. Examples: `core`, `core18`, `core20`, `core22`, `core24`. Defaults to `core24`",
-          "type": [
-            "null",
-            "string"
-          ]
         },
         "buildPackages": {
           "anyOf": [
@@ -6294,7 +6295,7 @@
               "type": "null"
             }
           ],
-          "description": "The list of debian packages needs to be installed for building this snap."
+          "description": "Debian packages required at **build** time (installed inside the build environment)."
         },
         "category": {
           "description": "The [application category](https://specifications.freedesktop.org/menu-spec/latest/apa.html#main-category-registry).",
@@ -6316,7 +6317,7 @@
               "type": "null"
             }
           ],
-          "description": "Sets the compression type for the snap. Can be xz, lzo, or null."
+          "description": "Compression algorithm for the snap file."
         },
         "confinement": {
           "anyOf": [
@@ -6365,7 +6366,7 @@
               "type": "null"
             }
           ],
-          "description": "The custom environment. Defaults to `{\"TMPDIR: \"$XDG_RUNTIME_DIR\"}`. If you set custom, it will be merged with default."
+          "description": "Additional environment variables injected into the snap's runtime environment.\nMerged with the electron-builder defaults (`TMPDIR=$XDG_RUNTIME_DIR`).\nUser-supplied values take precedence."
         },
         "executableArgs": {
           "anyOf": [
@@ -6396,7 +6397,7 @@
           "default": [
             "gnome"
           ],
-          "description": "The list of debian packages needs to be installed for building this snap."
+          "description": "[Snapcraft extensions](https://snapcraft.io/docs/snapcraft-extensions) to apply to the app.\nDefaults to `[\"gnome\"]`, which provides automatic desktop integration via the\n[GNOME extension](https://snapcraft.io/docs/gnome-extension): command-chain, GNOME\nplatform content snap, GTK/icon/sound themes.\n\nSet to `[]` to disable all extensions (e.g. for KDE apps using `kde-neon` instead).\nThe `gnome` extension is automatically removed in host/destructive-mode builds\nbecause it is incompatible with that environment."
         },
         "grade": {
           "anyOf": [
@@ -6412,11 +6413,11 @@
             }
           ],
           "default": "stable",
-          "description": "The quality grade of the snap. It can be either `devel` (i.e. a development version of the snap, so not to be published to the \"stable\" or \"candidate\" channels) or \"stable\" (i.e. a stable release or release candidate, which can be released to all channels)."
+          "description": "The quality grade of the snap.\n`devel` — not publishable to stable/candidate channels.\n`stable` — suitable for all channels."
         },
         "hooks": {
           "default": "build/snap-hooks",
-          "description": "The [hooks](https://docs.snapcraft.io/build-snaps/hooks) directory, relative to `build` (build resources directory).",
+          "description": "Directory containing [snap hooks](https://snapcraft.io/docs/snap-hooks), relative to\nthe build resources directory.",
           "type": [
             "null",
             "string"
@@ -6431,7 +6432,7 @@
               "type": "null"
             }
           ],
-          "description": "Specifies any files to make accessible from locations such as `/usr`, `/var`, and `/etc`. See [snap layouts](https://snapcraft.io/docs/snap-layouts) to learn more."
+          "description": "[Snap layouts](https://snapcraft.io/docs/snap-layouts) — bind-mount or symlink host paths\ninto the snap's namespace. User-provided layouts always override the extension defaults."
         },
         "mimeTypes": {
           "anyOf": [
@@ -6469,7 +6470,50 @@
               "type": "null"
             }
           ],
-          "description": "The list of [plugs](https://snapcraft.io/docs/reference/interfaces).\nDefaults to `[\"desktop\", \"desktop-legacy\", \"home\", \"x11\", \"wayland\", \"unity7\", \"browser-support\", \"network\", \"gsettings\", \"audio-playback\", \"pulseaudio\", \"opengl\"]`.\n\nIf list contains `default`, it will be replaced to default list, so, `[\"default\", \"foo\"]` can be used to add custom plug `foo` in addition to defaults.\n\nAdditional attributes can be specified using object instead of just name of plug:\n```\n[\n {\n   \"browser-sandbox\": {\n     \"interface\": \"browser-support\",\n     \"allow-sandbox\": true\n   },\n },\n \"another-simple-plug-name\"\n]\n```"
+          "description": "[Plugs](https://snapcraft.io/docs/reference/interfaces) (consumed interfaces) for the app.\nWhen the `gnome` extension is active, content-snap plugs (themes, GNOME platform, GPU)\nare added automatically — only list custom plugs here.\nWithout any extension, defaults to the standard Electron plug set.\n\nSupports descriptor objects for plugs with attributes:\n```json\n[{ \"browser-sandbox\": { \"interface\": \"browser-support\", \"allow-sandbox\": true } }]\n```"
+        },
+        "publish": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/GithubOptions"
+            },
+            {
+              "$ref": "#/definitions/GitlabOptions"
+            },
+            {
+              "$ref": "#/definitions/S3Options"
+            },
+            {
+              "$ref": "#/definitions/SpacesOptions"
+            },
+            {
+              "$ref": "#/definitions/GenericServerOptions"
+            },
+            {
+              "$ref": "#/definitions/CustomPublishOptions"
+            },
+            {
+              "$ref": "#/definitions/KeygenOptions"
+            },
+            {
+              "$ref": "#/definitions/SnapStoreOptions"
+            },
+            {
+              "$ref": "#/definitions/BitbucketOptions"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/AllPublishOptions"
+              },
+              "type": "array"
+            },
+            {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          ]
         },
         "remoteBuild": {
           "anyOf": [
@@ -6479,12 +6523,13 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "Configuration for a remote build on [Launchpad](https://launchpad.net/).\nEnables multi-architecture builds (amd64, arm64, armhf) in CI without native hardware."
         },
         "slots": {
           "anyOf": [
             {
-              "$ref": "#/definitions/PlugDescriptor"
+              "$ref": "#/definitions/SlotDescriptor"
             },
             {
               "items": {
@@ -6503,7 +6548,7 @@
               "type": "null"
             }
           ],
-          "description": "The list of [slots](https://snapcraft.io/docs/reference/interfaces).\n\nAdditional attributes can be specified using object instead of just name of slot:\n```\n[\n {\n   \"mpris\": {\n     \"name\": \"chromium\"\n   },\n }\n]\n\nIn case you want your application to be a compliant MPris player, you will need to definie\nThe mpris slot with \"chromium\" name.\nThis electron has it [hardcoded](https://source.chromium.org/chromium/chromium/src/+/master:components/system_media_controls/linux/system_media_controls_linux.cc;l=51;bpv=0;bpt=1),\nand we need to pass this name so snap [will allow it](https://forum.snapcraft.io/t/unable-to-use-mpris-interface/15360/7) in strict confinement."
+          "description": "[Slots](https://snapcraft.io/docs/reference/interfaces) (provided interfaces) for the app.\nUse for MPRIS, D-Bus services, etc.\n\nExample — expose MPRIS under the Chromium bus name:\n```json\n[{ \"mpris\": { \"name\": \"chromium\" } }]\n```"
         },
         "stagePackages": {
           "anyOf": [
@@ -6517,10 +6562,10 @@
               "type": "null"
             }
           ],
-          "description": "The list of Ubuntu packages to use that are needed to support the `app` part creation. Like `depends` for `deb`.\nDefaults to `[\"libnspr4\", \"libnss3\", \"libxss1\", \"libappindicator3-1\", \"libsecret-1-0\"]`.\n\nIf list contains `default`, it will be replaced to default list, so, `[\"default\", \"foo\"]` can be used to add custom package `foo` in addition to defaults."
+          "description": "Ubuntu packages to **stage** alongside the app (equivalent to `depends` for deb).\nDefaults to `[\"libnspr4\", \"libnss3\", \"libxss1\", \"libappindicator3-1\", \"libsecret-1-0\"]`.\nSupports the `\"default\"` keyword to reference the default list:\n`[\"default\", \"my-extra-lib\"]` appends `my-extra-lib` to the defaults."
         },
         "summary": {
-          "description": "The 78 character long summary. Defaults to [productName](./configuration.md#productName).",
+          "description": "A short summary of the snap (max 78 characters). Defaults to `productName`.",
           "type": [
             "null",
             "string"
@@ -6534,31 +6579,28 @@
           ]
         },
         "title": {
-          "description": "An optional title for the snap, may contain uppercase letters and spaces. Defaults to `productName`. See [snap format documentation](https://snapcraft.io/docs/snap-format).",
+          "description": "An optional display title (may contain uppercase letters and spaces). Defaults to `productName`.\nSee [snap format](https://snapcraft.io/docs/snap-format).",
           "type": [
             "null",
             "string"
           ]
         },
         "useDestructiveMode": {
-          "type": [
-            "null",
-            "boolean"
-          ]
-        },
-        "useGnomeExtension": {
+          "description": "Build directly on the host without an isolated VM or container.\nEquivalent to setting `SNAPCRAFT_BUILD_ENVIRONMENT=host`.\nRequired when building inside Docker (where nested virtualisation is unavailable).\nThe `gnome` extension will be automatically stripped from `extensions` in this mode.",
           "type": [
             "null",
             "boolean"
           ]
         },
         "useLXD": {
+          "description": "Use [LXD](https://canonical.com/lxd) as the isolated build environment.\nPreferred over Multipass on most Linux CI systems where nested virtualisation is unavailable.\nMutually exclusive with `useMultipass` and `useDestructiveMode`.",
           "type": [
             "null",
             "boolean"
           ]
         },
         "useMultipass": {
+          "description": "Use [Multipass](https://multipass.run/) as the isolated build environment.\nMutually exclusive with `useLXD` and `useDestructiveMode`.",
           "type": [
             "null",
             "boolean"
@@ -6666,8 +6708,7 @@
             "string"
           ]
         },
-        "core": {
-          "default": "core24",
+        "base": {
           "description": "A snap of type base to be used as the execution environment for this snap. Examples: `core18`, `core20`, `core22`, `core24`.",
           "enum": [
             "core18",
@@ -6774,7 +6815,7 @@
         }
       },
       "required": [
-        "core"
+        "base"
       ],
       "type": "object"
     },

@@ -1,26 +1,17 @@
 import { asArray, exists, InvalidConfigurationError, isEmptyOrSpaces, log } from "builder-util"
-import { Configuration } from "../configuration"
-import { SnapcraftOptions, SnapOptions } from "../options/SnapOptions"
-
-function resolveSnapcraftConfig(config: Configuration): SnapcraftOptions | null {
-  return config.snapcraft ?? null
-}
-
-function resolveLegacySnapConfig(config: Configuration): SnapOptions | null {
-  // @ts-ignore — intentionally reading the deprecated `snap` fallback
-  return config.snap ?? null
-}
 import { outputFile } from "fs-extra"
 import { Lazy } from "lazy-val"
 import { join } from "path"
 import * as semver from "semver"
+import { Configuration } from "../configuration"
 import { LinuxPackager } from "../linuxPackager"
+import { SnapcraftOptions, SnapOptions } from "../options/SnapOptions"
 import { LinuxTargetSpecificOptions } from "../options/linuxOptions"
 import { IconInfo } from "../platformPackager"
 import { SnapCore } from "./snap/SnapTarget"
-import { SnapCoreLegacy } from "./snap/coreLegacy"
 import { SnapCore24 } from "./snap/core24"
 import { SnapCoreCustom } from "./snap/coreCustom"
+import { SnapCoreLegacy } from "./snap/coreLegacy"
 
 export const installPrefix = "/opt"
 
@@ -43,9 +34,9 @@ export class LinuxTargetHelper {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getSnapCore(): SnapCore<any> {
-    const snapcraft = resolveSnapcraftConfig(this.packager.config)
+    const snapcraft = this.resolveSnapcraftConfig(this.packager.config)
     if (snapcraft != null) {
-      const core = snapcraft.core || "core24"
+      const core = snapcraft.base || "core24"
       switch (core) {
         case "core18":
         case "core20":
@@ -70,7 +61,7 @@ export class LinuxTargetHelper {
       }
     }
     // Backward compat: flat `snap` key maps directly to the legacy build path.
-    const legacySnap = resolveLegacySnapConfig(this.packager.config) ?? {}
+    const legacySnap = this.resolveLegacySnapConfig(this.packager.config) ?? {}
     return new SnapCoreLegacy(this.packager, this, legacySnap)
   }
 
@@ -265,6 +256,14 @@ export class LinuxTargetHelper {
       data += "\n"
     }
     return Promise.resolve(data)
+  }
+
+  private resolveSnapcraftConfig(config: Configuration): SnapcraftOptions | null {
+    return config.snapcraft ?? null
+  }
+
+  private resolveLegacySnapConfig(config: Configuration): SnapOptions | null {
+    return config.snap ?? null
   }
 }
 
