@@ -7,6 +7,7 @@ import * as path from "path"
 import { PlugDescriptor, SnapOptions } from "../../options/SnapOptions"
 import { SnapCore } from "./SnapTarget"
 
+// Leverages legacy implementation through app-builder-bin https://github.com/develar/app-builder/blob/master/pkg/package-format/snap
 export class SnapCoreLegacy extends SnapCore<SnapOptions> {
   private isUseTemplateApp = false
 
@@ -35,7 +36,6 @@ export class SnapCoreLegacy extends SnapCore<SnapOptions> {
     const defaultStagePackages = this.getDefaultStagePackages()
     const stagePackages = this.replaceDefault(options.stagePackages, defaultStagePackages)
 
-    // isArrayEqualRegardlessOfSort is not exported by builder-util; inline the check.
     const stageSet = new Set(stagePackages)
     const stageMatchesDefaults = stagePackages.length === defaultStagePackages.length && defaultStagePackages.every(p => stageSet.has(p))
 

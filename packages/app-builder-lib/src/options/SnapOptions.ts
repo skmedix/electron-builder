@@ -7,12 +7,12 @@ import { CommonLinuxOptions } from "./linuxOptions"
  */
 export interface SnapcraftOptions extends TargetSpecificOptions {
   /**
-   * A snap of type base to be used as the execution environment for this snap. Examples: `core18`, `core20`, `core22`, `core24`.
+   * A snap of type base to be used as the execution environment for this snap; can only select one core for target.
    */
   readonly base: "core18" | "core20" | "core22" | "core24" | "custom"
-  readonly core18?: SnapOptions | null
-  readonly core20?: SnapOptions | null
-  readonly core22?: SnapOptions | null
+  readonly core18?: SnapOptionsLegacy | null
+  readonly core20?: SnapOptionsLegacy | null
+  readonly core22?: SnapOptionsLegacy | null
   readonly core24?: SnapOptions24 | null
   /**
    * Pass-through custom snap configuration. electron-builder will read the
@@ -21,6 +21,7 @@ export interface SnapcraftOptions extends TargetSpecificOptions {
    */
   readonly custom?: SnapOptionsCustom | null
 }
+export type SnapOptionsLegacy = Omit<SnapOptions, "base">
 
 export interface SnapOptionsCustom {
   /**
@@ -241,7 +242,7 @@ export interface SnapOptions24 extends CommonLinuxOptions, TargetSpecificOptions
    * Build directly on the host without an isolated VM or container.
    * Equivalent to setting `SNAPCRAFT_BUILD_ENVIRONMENT=host`.
    * Required when building inside Docker (where nested virtualisation is unavailable).
-   * The `gnome` extension will be automatically stripped from `extensions` in this mode.
+   * The `gnome` extension is incompatible with this mode — do not include it in `extensions`.
    */
   readonly useDestructiveMode?: boolean | null
 
@@ -255,15 +256,10 @@ export interface SnapOptions24 extends CommonLinuxOptions, TargetSpecificOptions
 
   /**
    * [Snapcraft extensions](https://snapcraft.io/docs/snapcraft-extensions) to apply to the app.
-   * Defaults to `["gnome"]`, which provides automatic desktop integration via the
-   * [GNOME extension](https://snapcraft.io/docs/gnome-extension): command-chain, GNOME
-   * platform content snap, GTK/icon/sound themes.
-   *
-   * Set to `[]` to disable all extensions (e.g. for KDE apps using `kde-neon` instead).
-   * The `gnome` extension is automatically removed in host/destructive-mode builds
-   * because it is incompatible with that environment.
-   *
-   * @default ["gnome"]
+   * Defaults to `["gnome"]` in normal builds (recommended for Electron apps on Ubuntu 24.04+).
+   * Automatically set to `[]` in `useDestructiveMode` builds, where the gnome extension is
+   * incompatible. Explicitly including `"gnome"` while `useDestructiveMode` is set will throw.
+   * See: https://snapcraft.io/docs/gnome-extension
    */
   readonly extensions?: Array<string> | null
 

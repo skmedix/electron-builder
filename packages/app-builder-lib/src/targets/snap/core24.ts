@@ -1,4 +1,4 @@
-import { Arch, archFromString, copyDir, log, removeNullish, toLinuxArchString } from "builder-util"
+import { Arch, archFromString, copyDir, InvalidConfigurationError, log, removeNullish, toLinuxArchString } from "builder-util"
 import { copy, mkdir, readdir, writeFile } from "fs-extra"
 import * as path from "path"
 import { PlugDescriptor, SlotDescriptor, SnapOptions24 } from "../../options/SnapOptions"
@@ -121,14 +121,22 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
     const appInfo = this.packager.appInfo
     const appName = this.packager.executableName.toLowerCase()
     const options = this.options
-    // Resolve the extension list. Default to ["gnome"] when the user has not set anything.
-    // In host/destructive-mode the gnome extension fails because snapcraft tries to pull
-    // /usr/share/snapcraft/extensions/desktop/command-chain as a local source and cannot
-    // determine the source type; strip it automatically and warn.
-    let extensionsList: string[] = options.extensions != null ? [...options.extensions] : ["gnome"]
-    if (this.isHostMode() && extensionsList.includes("gnome")) {
-      log.warn(null, "gnome snapcraft extension is not supported in host/destructive-mode — removing it from the extension list")
-      extensionsList = extensionsList.filter(e => e !== "gnome")
+    // Default to ["gnome"] in normal builds; no extensions in host/destructive-mode (where the
+    // gnome extension is incompatible). Throw if the user explicitly includes "gnome" in host mode.
+    const hostMode = this.isHostMode()
+    const extensionsList: string[] = options.extensions != null ? [...options.extensions] : hostMode ? [] : ["gnome"]
+    if (hostMode && extensionsList.includes("gnome")) {
+      throw new InvalidConfigurationError(
+        `The "gnome" snapcraft extension is incompatible with host/destructive-mode builds.\n` +
+          `In this mode snapcraft cannot resolve the extension's command-chain source ` +
+          `(/usr/share/snapcraft/extensions/desktop/command-chain) and will fail.\n\n` +
+          `To resolve this, choose one of:\n` +
+          `  1. Remove "gnome" from snapcraft.core24.extensions (or set it to []) and add any\n` +
+          `     required stage-packages manually.\n` +
+          `  2. Switch to an isolated build environment by setting snapcraft.core24.useLXD: true\n` +
+          `     or snapcraft.core24.useMultipass: true instead of useDestructiveMode.\n\n` +
+          `See: https://snapcraft.io/docs/gnome-extension`
+      )
     }
     const resolvedExtensions = extensionsList.length > 0 ? extensionsList : undefined
     const useGnomeExtension = extensionsList.includes("gnome")

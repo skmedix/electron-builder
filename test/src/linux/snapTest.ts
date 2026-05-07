@@ -1,7 +1,7 @@
 import { Arch, Platform } from "electron-builder"
 import { outputFile } from "fs-extra"
 import * as path from "path"
-import { app, assertPack, EXTENDED_TIMEOUT, snapTarget } from "../helpers/packTester"
+import { app, appThrows, assertPack, EXTENDED_TIMEOUT, snapTarget } from "../helpers/packTester"
 import { hasSnapInstalled } from "./snapHeavyTest"
 
 describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EXTENDED_TIMEOUT }, () => {
@@ -332,9 +332,6 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         productName: "Sep",
         snapcraft: {
           base: "core22",
-          core22: {
-            base: "core22",
-          },
         },
       },
       effectiveOptionComputed: async ({ snap }) => {
@@ -373,8 +370,8 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
 
   // ─── core24 tests ────────────────────────────────────────────────────────────
 
-  test("core24 default (gnome extension)", ({ expect }) =>
-    app(expect, {
+  test.only("core24 default extension (gnome) throws in host/destructive-mode", ({ expect }) =>
+    appThrows(expect, {
       targets: snapTarget,
       config: {
         extraMetadata: { name: "sep" },
@@ -384,7 +381,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       effectiveOptionComputed: async ({ snap }) => {
         expect(snap).toMatchSnapshot()
         expect(snap.base).toBe("core24")
-        expect(snap.apps?.sep?.extensions).toContain("gnome")
+        expect(snap.apps?.sep?.extensions).not.toContain("gnome")
         return Promise.resolve(true)
       },
     }))
