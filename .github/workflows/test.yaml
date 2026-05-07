@@ -366,6 +366,25 @@ jobs:
           VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
           RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
 
+      # Run the "snap core24 native" describe block directly on the runner (no Docker).
+      # This exercises build → unsquashfs → binary launch on a real Ubuntu 24.04 host,
+      # matching the environment that end-users build on. squashfs-tools provides unsquashfs.
+      - name: Install snapcraft natively (core24 native tests)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y squashfs-tools xvfb
+          sudo snap install snapcraft --classic
+
+      - name: Test snap core24 native (install + launch)
+        run: pnpm ci:test
+        env:
+          TEST_FILES: snapHeavyTest
+          SNAP_TEST_CORES: core24
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+          RUN_SNAP_TESTS: "true"
+          VITEST_SMART_CACHE_FILE: ${{ github.workspace }}/test/vitest-scripts/_vitest-smart-cache.json
+          RESET_VITEST_SHARD_CACHE: ${{ inputs.reset-vitest-smart-cache }}
+
       - name: Upload smart cache artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
         if: always()
