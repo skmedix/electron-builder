@@ -43,6 +43,10 @@ export class SnapCoreCustom extends SnapCore<SnapOptionsCustom> {
     await outputFile(snapcraftYamlPath, yamlContent, "utf8")
     log.debug(snap, "using custom snapcraft.yaml (pass-through, no injection)")
 
+    if (this.packager.packagerOptions.effectiveOptionComputed != null && (await this.packager.packagerOptions.effectiveOptionComputed({ snap }))) {
+      return
+    }
+
     await buildSnap({
       snapcraftConfig: snap,
       artifactPath,

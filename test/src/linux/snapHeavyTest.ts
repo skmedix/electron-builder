@@ -193,7 +193,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap heavy", { sequential: true, timeo
 // pipeline for core24 specifically, including the gnome extension path and the
 // destructive-mode (no gnome extension) path.
 
-describe.heavy.ifLinux.ifEnv(hasSnapInstalled())("snap core24 native", { sequential: true, timeout: EXTENDED_TIMEOUT }, () => {
+describe.heavy.ifLinux.ifEnv(hasSnapInstalled() && canRunInstallTests())("snap core24 native", { sequential: true, timeout: EXTENDED_TIMEOUT }, () => {
   test("core24 build + install + launch", async ({ expect }) => {
     await runInstallLaunchTest(expect, "core24")
   })

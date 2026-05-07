@@ -370,8 +370,8 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
 
   // ─── core24 tests ────────────────────────────────────────────────────────────
 
-  test.only("core24 default extension (gnome) throws in host/destructive-mode", ({ expect }) =>
-    appThrows(expect, {
+  test("core24 default (gnome extension)", ({ expect }) =>
+    app(expect, {
       targets: snapTarget,
       config: {
         extraMetadata: { name: "sep" },
@@ -381,8 +381,18 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       effectiveOptionComputed: async ({ snap }) => {
         expect(snap).toMatchSnapshot()
         expect(snap.base).toBe("core24")
-        expect(snap.apps?.sep?.extensions).not.toContain("gnome")
+        expect(snap.apps?.sep?.extensions).toContain("gnome")
         return Promise.resolve(true)
+      },
+    }))
+
+  test("core24 gnome extension throws in destructive-mode", ({ expect }) =>
+    appThrows(expect, {
+      targets: snapTarget,
+      config: {
+        extraMetadata: { name: "sep" },
+        productName: "Sep",
+        snapcraft: { base: "core24", core24: { useDestructiveMode: true, extensions: ["gnome"] } },
       },
     }))
 
@@ -419,7 +429,7 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
       },
       effectiveOptionComputed: async ({ snap }) => {
         expect(snap).toMatchSnapshot()
-        expect(snap.apps?.sep?.environment?.["DISABLE_WAYLAND"]).toBe("1")
+        expect(snap.environment?.["DISABLE_WAYLAND"]).toBe("1")
         return Promise.resolve(true)
       },
     }))
