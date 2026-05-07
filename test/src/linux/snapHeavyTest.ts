@@ -18,7 +18,7 @@ import { launchSnapBinary } from "../helpers/launchAppCrossPlatform"
 export const hasSnapInstalled = () => process.env.RUN_SNAP_TESTS === "true" || which.sync("snap", { nothrow: true }) != null || which.sync("snapcraft", { nothrow: true }) != null
 
 // Whether install+launch tests should run. Requires unsquashfs on PATH (squashfs-tools).
-const canRunInstallTests = () => (process.env.RUN_SNAP_TESTS === "true" || process.platform === "linux") && which.sync("unsquashfs", { nothrow: true }) != null
+const canRunInstallTests = () => process.platform === "linux" && which.sync("unsquashfs", { nothrow: true }) != null
 
 // Optional core filter: SNAP_TEST_CORES=core24  (comma-separated)
 // When unset every core is tested.

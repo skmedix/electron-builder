@@ -79,6 +79,7 @@ trap 'rm -rf "$SNAPCRAFT_LOG_DIR"' EXIT
 COMMON_DOCKER_ARGS="--privileged \
   -e RUN_SNAP_TESTS=true \
   -e SNAPCRAFT_BUILD_ENVIRONMENT=host \
+  -e SKIPPED_TESTS=${SKIPPED_TESTS:-} \
   -v ${SNAPCRAFT_LOG_DIR}:/root/.local/state/snapcraft/log \
   ${ADDITIONAL_DOCKER_ARGS:-}"
 

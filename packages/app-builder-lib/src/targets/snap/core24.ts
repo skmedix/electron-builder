@@ -241,13 +241,18 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       confinement: options.confinement || "strict",
       parts: parts,
 
-      // Architecture/Platform
-      platforms: {
-        [toLinuxArchString(arch, "snap")]: {
-          "build-for": toLinuxArchString(arch, "snap"),
-          "build-on": toLinuxArchString(archFromString(process.arch), "snap"),
-        },
-      },
+      // Architecture/Platform — only needed for cross-compilation; snapcraft 8
+      // defaults to host arch and snapcraft 7 rejects this field entirely.
+      ...(arch !== archFromString(process.arch)
+        ? {
+            platforms: {
+              [toLinuxArchString(arch, "snap")]: {
+                "build-for": toLinuxArchString(arch, "snap"),
+                "build-on": toLinuxArchString(archFromString(process.arch), "snap"),
+              },
+            },
+          }
+        : {}),
 
       // Metadata - with fallbacks from appInfo
       version: appInfo.version,
