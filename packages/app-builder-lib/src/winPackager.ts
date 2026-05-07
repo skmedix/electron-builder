@@ -280,6 +280,11 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
     if (this.platformSpecificBuildOptions.signAndEditExecutable === false) {
       return false
     }
+    if (this.platformSpecificBuildOptions.signExecutable === false && this.forceCodeSigning) {
+      throw new InvalidConfigurationError(
+        "`signExecutable` and `forceCodeSigning` are mutually exclusive: you cannot disable signing while also requiring it. Remove one of these options."
+      )
+    }
 
     const files = await readdir(packContext.appOutDir)
     for (const file of files) {

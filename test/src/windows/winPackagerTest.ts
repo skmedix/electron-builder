@@ -175,7 +175,7 @@ for (const winCodeSign of winCodeSignVersions) {
       app(
         expect,
         {
-          targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+          targets: Platform.WINDOWS.createTarget(["zip"], Arch.x64),
           config: {
             win: { signExecutable: false },
             toolsets: { winCodeSign },
@@ -208,35 +208,77 @@ for (const winCodeSign of winCodeSignVersions) {
       app(
         expect,
         {
-          targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+          targets: Platform.WINDOWS.createTarget(["zip"], Arch.x64),
           config: {
             win: { signExecutable: false },
             toolsets: { winCodeSign },
           },
         },
-        { signedWin: true }
+        {
+          signedWin: true,
+          packed: async context => {
+            const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
+            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
+            expect(exeFiles.length).toBeGreaterThan(0)
+
+            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const res = NtExecutableResource.from(NtExecutable.from(buffer))
+            const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
+            expect(versionInfoList.length).toBeGreaterThan(0)
+
+            const strings = versionInfoList[0].getStringValues(versionInfoList[0].getAllLanguagesForStringValues()[0])
+            expect(strings["ProductName"]).toBeDefined()
+            expect(strings["FileDescription"]).toBeDefined()
+          },
+        }
       )
     )
 
-    test("signExecutable: false — overrides forceCodeSigning", ({ expect }) =>
-      app(expect, {
-        targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
-        config: {
-          forceCodeSigning: true,
-          win: { signExecutable: false },
-          toolsets: { winCodeSign },
+    test("signExecutable: false — throws when combined with forceCodeSigning", ({ expect }) =>
+      appThrows(
+        expect,
+        {
+          targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+          config: {
+            forceCodeSigning: true,
+            win: { signExecutable: false },
+            toolsets: { winCodeSign },
+          },
         },
-      })
+        {},
+        error => expect(error.message).toContain("`signExecutable` and `forceCodeSigning` are mutually exclusive")
+      )
     )
 
     test("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
-      app(expect, {
-        targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
-        config: {
-          win: { signAndEditExecutable: false },
-          toolsets: { winCodeSign },
+      app(
+        expect,
+        {
+          targets: Platform.WINDOWS.createTarget(["zip"], Arch.x64),
+          config: {
+            win: { signAndEditExecutable: false },
+            toolsets: { winCodeSign },
+          },
         },
-      })
+        {
+          packed: async context => {
+            const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
+            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
+            expect(exeFiles.length).toBeGreaterThan(0)
+
+            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const res = NtExecutableResource.from(NtExecutable.from(buffer))
+            const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
+            if (versionInfoList.length > 0) {
+              const langs = versionInfoList[0].getAllLanguagesForStringValues()
+              if (langs.length > 0) {
+                const strings = versionInfoList[0].getStringValues(langs[0])
+                expect(strings["ProductName"]).not.toBe("Test App ßW")
+              }
+            }
+          },
+        }
+      )
     )
   })
 }
