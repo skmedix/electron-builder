@@ -128,6 +128,10 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
       log.info(logFields, "file signing skipped via signExts configuration")
       return false
     }
+    if (this.platformSpecificBuildOptions.signExecutable === false) {
+      log.info(logFields, "file signing skipped via signExecutable configuration")
+      return false
+    }
 
     this.signingQueue = this.signingQueue.then(() => this._sign(file))
     return this.signingQueue

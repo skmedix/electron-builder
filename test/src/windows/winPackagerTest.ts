@@ -2,6 +2,7 @@ import { ToolsetConfig } from "app-builder-lib/src/configuration"
 import { Arch, DIR_TARGET, Platform } from "electron-builder"
 import * as fs from "fs/promises"
 import * as path from "path"
+import { NtExecutable, NtExecutableResource, Resource } from "resedit"
 import { CheckingWinPackager } from "../helpers/CheckingPackager"
 import { app, appThrows, assertPack, platform } from "../helpers/packTester"
 
@@ -169,5 +170,73 @@ for (const winCodeSign of winCodeSignVersions) {
         }
       )
     })
+
+    test("signExecutable: false — rcedit still edits exe resources", ({ expect }) =>
+      app(
+        expect,
+        {
+          targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+          config: {
+            win: { signExecutable: false },
+            toolsets: { winCodeSign },
+          },
+        },
+        {
+          packed: async context => {
+            const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
+            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
+            expect(exeFiles.length).toBeGreaterThan(0)
+
+            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const res = NtExecutableResource.from(NtExecutable.from(buffer))
+            const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
+            expect(versionInfoList.length).toBeGreaterThan(0)
+
+            const versionInfo = versionInfoList[0]
+            const langs = versionInfo.getAllLanguagesForStringValues()
+            expect(langs.length).toBeGreaterThan(0)
+
+            const strings = versionInfo.getStringValues(langs[0])
+            expect(strings["ProductName"]).toBeDefined()
+            expect(strings["FileDescription"]).toBeDefined()
+          },
+        }
+      )
+    )
+
+    test("signExecutable: false — signing skipped even with cert", ({ expect }) =>
+      app(
+        expect,
+        {
+          targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+          config: {
+            win: { signExecutable: false },
+            toolsets: { winCodeSign },
+          },
+        },
+        { signedWin: true }
+      )
+    )
+
+    test("signExecutable: false — overrides forceCodeSigning", ({ expect }) =>
+      app(expect, {
+        targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+        config: {
+          forceCodeSigning: true,
+          win: { signExecutable: false },
+          toolsets: { winCodeSign },
+        },
+      })
+    )
+
+    test("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
+      app(expect, {
+        targets: Platform.WINDOWS.createTarget(DIR_TARGET, Arch.x64),
+        config: {
+          win: { signAndEditExecutable: false },
+          toolsets: { winCodeSign },
+        },
+      })
+    )
   })
 }
