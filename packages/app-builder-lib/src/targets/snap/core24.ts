@@ -24,7 +24,7 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
   }
 
   private isHostMode(): boolean {
-    return this.options.useDestructiveMode === true || process.env.SNAPCRAFT_BUILD_ENVIRONMENT === "host"
+    return this.options.useDestructiveMode === true
   }
 
   async buildSnap(params: { snap: SnapcraftYAML; appOutDir: string; stageDir: string; snapArch: Arch; artifactPath: string }): Promise<void> {
@@ -203,7 +203,7 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       appPlugs = result.app
     }
 
-    const { root: rootSlots, app: appSlots } = options.slots ? this.processPlugOrSlots(options.slots) : { root: {}, app: [] }
+    const { root: rootSlots, app: appSlots } = options.slots ? this.processPlugOrSlots(options.slots) : { root: undefined, app: undefined }
 
     // Create the app configuration
     const app: App = {
@@ -216,8 +216,9 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       extensions: resolvedExtensions,
     }
 
-    // Icon path in the top-level metadata
-    const iconPath = (await this.helper.icons) && this.helper.maxIconPath != null ? `\${SNAP}/meta/gui/${appName}${path.extname(this.helper.maxIconPath)}` : undefined
+    // Icon path — build-time relative path so snapcraft can find the file in snap/gui/
+    await this.helper.icons
+    const iconPath = this.helper.maxIconPath != null ? `snap/gui/${appName}${path.extname(this.helper.maxIconPath)}` : undefined
 
     // Process hooks if configured
     const hooksConfig = options.hooks

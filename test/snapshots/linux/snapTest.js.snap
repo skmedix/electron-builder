@@ -39,7 +39,7 @@ exports[`snap > auto start 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -113,7 +113,7 @@ exports[`snap > base option 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -149,11 +149,21 @@ exports[`snap > base option 1`] = `
 }
 `;
 
+exports[`snap > base option 2`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "TestApp_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
 exports[`snap > buildPackages 1`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
       "environment": {
         "DISABLE_WAYLAND": "1",
@@ -177,7 +187,7 @@ exports[`snap > buildPackages 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -381,7 +391,6 @@ exports[`snap > compression option 1`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
       "environment": {
         "DISABLE_WAYLAND": "1",
@@ -405,7 +414,7 @@ exports[`snap > compression option 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "compression": "xz",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
@@ -611,7 +620,6 @@ exports[`snap > core24 custom plugs with default expansion 1`] = `
         "opengl",
         "camera",
       ],
-      "slots": [],
     },
   },
   "base": "core24",
@@ -621,7 +629,7 @@ exports[`snap > core24 custom plugs with default expansion 1`] = `
     "TMPDIR": "$XDG_RUNTIME_DIR",
   },
   "grade": "stable",
-  "icon": "\${SNAP}/meta/gui/sep.png",
+  "icon": "snap/gui/sep.png",
   "layout": {
     "/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0": {
       "bind": "$SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0",
@@ -667,13 +675,6 @@ exports[`snap > core24 custom plugs with default expansion 1`] = `
       "source": "app",
     },
   },
-  "platforms": {
-    "amd64": {
-      "build-for": "amd64",
-      "build-on": "amd64",
-    },
-  },
-  "slots": {},
   "summary": "Sep",
   "title": "Sep",
   "version": "1.1.0",
@@ -711,7 +712,6 @@ exports[`snap > core24 default (gnome extension) 1`] = `
         "pulseaudio",
         "opengl",
       ],
-      "slots": [],
     },
   },
   "base": "core24",
@@ -721,7 +721,7 @@ exports[`snap > core24 default (gnome extension) 1`] = `
     "TMPDIR": "$XDG_RUNTIME_DIR",
   },
   "grade": "stable",
-  "icon": "\${SNAP}/meta/gui/sep.png",
+  "icon": "snap/gui/sep.png",
   "layout": {
     "/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0": {
       "bind": "$SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0",
@@ -767,12 +767,6 @@ exports[`snap > core24 default (gnome extension) 1`] = `
       "source": "app",
     },
   },
-  "platforms": {
-    "amd64": {
-      "build-for": "amd64",
-      "build-on": "amd64",
-    },
-  },
   "plugs": {
     "gnome-46-2404": {
       "default-provider": "gnome-46-2404",
@@ -800,7 +794,6 @@ exports[`snap > core24 default (gnome extension) 1`] = `
       "target": "$SNAP/data-dir/sounds",
     },
   },
-  "slots": {},
   "summary": "Sep",
   "title": "Sep",
   "version": "1.1.0",
@@ -829,7 +822,6 @@ exports[`snap > core24 no gnome extension 1`] = `
         "pulseaudio",
         "opengl",
       ],
-      "slots": [],
     },
   },
   "base": "core24",
@@ -839,7 +831,7 @@ exports[`snap > core24 no gnome extension 1`] = `
     "TMPDIR": "$XDG_RUNTIME_DIR",
   },
   "grade": "stable",
-  "icon": "\${SNAP}/meta/gui/sep.png",
+  "icon": "snap/gui/sep.png",
   "layout": {
     "/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0": {
       "bind": "$SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0",
@@ -885,12 +877,6 @@ exports[`snap > core24 no gnome extension 1`] = `
       "source": "app",
     },
   },
-  "platforms": {
-    "amd64": {
-      "build-for": "amd64",
-      "build-on": "amd64",
-    },
-  },
   "plugs": {
     "gnome-46-2404": {
       "default-provider": "gnome-46-2404",
@@ -918,7 +904,6 @@ exports[`snap > core24 no gnome extension 1`] = `
       "target": "$SNAP/data-dir/sounds",
     },
   },
-  "slots": {},
   "summary": "Sep",
   "title": "Sep",
   "version": "1.1.0",
@@ -956,7 +941,6 @@ exports[`snap > core24 wayland disabled 1`] = `
         "pulseaudio",
         "opengl",
       ],
-      "slots": [],
     },
   },
   "base": "core24",
@@ -967,7 +951,7 @@ exports[`snap > core24 wayland disabled 1`] = `
     "TMPDIR": "$XDG_RUNTIME_DIR",
   },
   "grade": "stable",
-  "icon": "\${SNAP}/meta/gui/sep.png",
+  "icon": "snap/gui/sep.png",
   "layout": {
     "/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0": {
       "bind": "$SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.0",
@@ -1013,12 +997,6 @@ exports[`snap > core24 wayland disabled 1`] = `
       "source": "app",
     },
   },
-  "platforms": {
-    "amd64": {
-      "build-for": "amd64",
-      "build-on": "amd64",
-    },
-  },
   "plugs": {
     "gnome-46-2404": {
       "default-provider": "gnome-46-2404",
@@ -1046,7 +1024,6 @@ exports[`snap > core24 wayland disabled 1`] = `
       "target": "$SNAP/data-dir/sounds",
     },
   },
-  "slots": {},
   "summary": "Sep",
   "title": "Sep",
   "version": "1.1.0",
@@ -1091,7 +1068,7 @@ exports[`snap > custom after, no desktop 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -1166,7 +1143,7 @@ exports[`snap > custom env 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -1400,11 +1377,10 @@ exports[`snap > default stagePackages 1`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "classic",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -1570,11 +1546,10 @@ exports[`snap > default stagePackages 3`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "classic",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -1741,11 +1716,10 @@ exports[`snap > default stagePackages 5`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "classic",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -1912,11 +1886,10 @@ exports[`snap > default stagePackages 7`] = `
 {
   "apps": {
     "sep": {
-      "adapter": "none",
       "command": "command.sh",
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "classic",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2097,7 +2070,7 @@ exports[`snap > no desktop plugs 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2148,7 +2121,6 @@ exports[`snap > plugs option 1`] = `
 {
   "apps": {
     "testapp": {
-      "adapter": "none",
       "command": "command.sh",
       "environment": {
         "DISABLE_WAYLAND": "1",
@@ -2162,7 +2134,7 @@ exports[`snap > plugs option 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2354,7 +2326,6 @@ exports[`snap > plugs option 3`] = `
 {
   "apps": {
     "testapp": {
-      "adapter": "none",
       "command": "command.sh",
       "environment": {
         "DISABLE_WAYLAND": "1",
@@ -2368,7 +2339,7 @@ exports[`snap > plugs option 3`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2587,7 +2558,7 @@ exports[`snap > slots option 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2665,7 +2636,7 @@ exports[`snap > slots option 3`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2756,7 +2727,7 @@ exports[`snap > use template app 1`] = `
       ],
     },
   },
-  "base": "core20",
+  "base": "core22",
   "confinement": "strict",
   "description": "Test Application (test quite “ #378)",
   "grade": "stable",
@@ -2798,6 +2769,28 @@ exports[`snap > use template app 2`] = `
     {
       "arch": "x64",
       "file": "TestApp_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
+exports[`snap core24 native > core24 build + install + launch 1`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "se-wo-template_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
+exports[`snap core24 native > core24 destructive-mode (no gnome extension) 1`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "se-wo-template_1.1.0_amd64.snap",
     },
   ],
 }

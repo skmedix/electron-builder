@@ -1,5 +1,38 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`snap core24 native > core24 build + install + launch 1`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "se-wo-template_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
+exports[`snap core24 native > core24 destructive-mode (no gnome extension) 1`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "se-wo-template_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
+exports[`snap core24 native > core24 with custom stagePackages 1`] = `
+{
+  "linux": [
+    {
+      "arch": "x64",
+      "file": "se-wo-template_1.1.0_amd64.snap",
+    },
+  ],
+}
+`;
+
 exports[`snap heavy > snap full (core18 armhf) 1`] = `
 {
   "linux": [
