@@ -1,6 +1,6 @@
 import { getBinFromUrl } from "app-builder-lib/src/binDownload"
 import { isEmptyOrSpaces } from "builder-util"
-import { ChildProcess, spawn } from "child_process"
+import { ChildProcess, spawn, spawnSync } from "child_process"
 import { chmodSync } from "fs"
 import os from "os"
 import path from "path"
@@ -185,6 +185,27 @@ export async function launchAndWaitForQuit({
       }
     }, timeoutMs)
   })
+}
+
+/**
+ * Run a snap binary with --version --no-sandbox under Xvfb.
+ * Returns combined stdout+stderr output.
+ */
+export function launchSnapBinary(binaryPath: string, timeoutMs = 15_000): string {
+  const xvfb = startXvfb()
+  try {
+    const result = spawnSync(binaryPath, ["--version", "--no-sandbox"], {
+      env: { ...process.env, DISPLAY: xvfb.display },
+      timeout: timeoutMs,
+      encoding: "utf8",
+    })
+    if (result.error) {
+      throw result.error
+    }
+    return (result.stdout ?? "") + (result.stderr ?? "")
+  } finally {
+    xvfb.stop()
+  }
 }
 
 // ⬇️ Launch Xvfb and validate it starts

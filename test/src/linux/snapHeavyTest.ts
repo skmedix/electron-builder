@@ -6,7 +6,7 @@ import { readdir } from "fs/promises"
 import * as path from "path"
 import * as which from "which"
 import { app, assertPack, EXTENDED_TIMEOUT, snapTarget } from "../helpers/packTester"
-import { startXvfb } from "../helpers/launchAppCrossPlatform"
+import { launchSnapBinary } from "../helpers/launchAppCrossPlatform"
 
 // very slow
 
@@ -75,30 +75,6 @@ function assertSnapStructure(primeDir: string, appName: string, binaryPath: stri
     if (!existsSync(p)) {
       throw new Error(`Expected snap file not found: ${p}`)
     }
-  }
-}
-
-/**
- * Run the Electron binary with --version to verify it starts.
- * Electron prints its version to stdout and exits 0 — no window or sandbox required.
- * Uses Xvfb so no physical display is needed.
- */
-function launchSnapBinary(binaryPath: string, timeoutMs = 15_000): string {
-  const xvfb = startXvfb()
-  try {
-    const result = spawnSync(binaryPath, ["--version", "--no-sandbox"], {
-      env: { ...process.env, DISPLAY: (xvfb as any).display },
-      timeout: timeoutMs,
-      encoding: "utf8",
-    })
-    if (result.error) {
-      throw result.error
-    }
-    const output = (result.stdout ?? "") + (result.stderr ?? "")
-    log.info({ binaryPath, output: output.trim(), exitCode: result.status }, "snap binary launch result")
-    return output
-  } finally {
-    xvfb.stop()
   }
 }
 
