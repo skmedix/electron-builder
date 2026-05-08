@@ -195,10 +195,12 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
 
       const result = options.plugs
         ? this.processPlugOrSlots(options.plugs)
-        : {
-            root: defaultRootPlugs,
-            app: this.defaultPlugs,
-          }
+        : hostMode
+          ? { root: undefined, app: this.defaultPlugs }
+          : {
+              root: defaultRootPlugs,
+              app: this.defaultPlugs,
+            }
       rootPlugs = result.root
       appPlugs = result.app
     }
@@ -271,8 +273,8 @@ export class SnapCore24 extends SnapCore<SnapOptions24> {
       // Environment
       environment: this.buildEnvironment(options),
 
-      // User-supplied layout always wins. Without gnome extension, fall back to content-snap defaults.
-      layout: options.layout ?? (useGnomeExtension ? undefined : this.buildDefaultLayout(options)),
+      // User-supplied layout always wins. Without gnome extension and not in host mode, fall back to content-snap defaults.
+      layout: options.layout ?? (useGnomeExtension || hostMode ? undefined : this.buildDefaultLayout(options)),
 
       // Interfaces
       plugs: rootPlugs,
