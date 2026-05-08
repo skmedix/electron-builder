@@ -64,8 +64,10 @@ export interface WindowsConfiguration extends PlatformSpecificBuildOptions {
 
   /**
    * Whether to sign Windows executables and any additional files matched by `signExts`.
-   * Set to `false` to skip all Windows code signing while still editing executable resources
-   * (icon, metadata, etc. via rcedit). Has no effect if `signAndEditExecutable` is `false`.
+   * Set to `false` to skip Windows code signing while still editing executable resources
+   * (icon, metadata, etc. via rcedit).
+   * This option is not limited to the main executable edit/sign flow and can also affect
+   * signing of Windows installers or other artifacts that use the standard signing path.
    * @default true
    */
   readonly signExecutable?: boolean

@@ -184,10 +184,11 @@ for (const winCodeSign of winCodeSignVersions) {
         {
           packed: async context => {
             const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
-            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
-            expect(exeFiles.length).toBeGreaterThan(0)
+            const expectedExe = `${context.packager.appInfo.productFilename}.exe`
+            const appDirEntries = await fs.readdir(appDir)
+            expect(appDirEntries).toContain(expectedExe)
 
-            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const buffer = await fs.readFile(path.join(appDir, expectedExe))
             const res = NtExecutableResource.from(NtExecutable.from(buffer))
             const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
             expect(versionInfoList.length).toBeGreaterThan(0)
@@ -234,8 +235,8 @@ for (const winCodeSign of winCodeSignVersions) {
             expect(versionInfoList.length).toBeGreaterThan(0)
 
             const strings = versionInfoList[0].getStringValues(versionInfoList[0].getAllLanguagesForStringValues()[0])
-            expect(strings["ProductName"]).toBeDefined()
-            expect(strings["FileDescription"]).toBeDefined()
+            expect(strings["ProductName"]).toBe("Test App ßW")
+            expect(strings["FileDescription"]).toBe("Test App ßW")
           },
         }
       )
@@ -276,13 +277,13 @@ for (const winCodeSign of winCodeSignVersions) {
             const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
             const res = NtExecutableResource.from(NtExecutable.from(buffer))
             const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
-            if (versionInfoList.length > 0) {
-              const langs = versionInfoList[0].getAllLanguagesForStringValues()
-              if (langs.length > 0) {
-                const strings = versionInfoList[0].getStringValues(langs[0])
-                expect(strings["ProductName"]).not.toBe("Test App ßW")
-              }
-            }
+            expect(versionInfoList.length).toBeGreaterThan(0)
+
+            const langs = versionInfoList[0].getAllLanguagesForStringValues()
+            expect(langs.length).toBeGreaterThan(0)
+
+            const strings = versionInfoList[0].getStringValues(langs[0])
+            expect(strings["ProductName"]).not.toBe("Test App ßW")
           },
         }
       )
