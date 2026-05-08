@@ -170,7 +170,7 @@ for (const winCodeSign of winCodeSignVersions) {
       )
     })
 
-    test.ifNotLinux("signExecutable: false — rcedit still edits exe resources", ({ expect }) =>
+    test("signExecutable: false — rcedit still edits exe resources", ({ expect }) =>
       app(
         expect,
         {
@@ -205,7 +205,7 @@ for (const winCodeSign of winCodeSignVersions) {
       )
     )
 
-    test.ifNotLinux("signExecutable: false — signing skipped even with cert", ({ expect }) =>
+    test("signExecutable: false — signing skipped even with cert", ({ expect }) =>
       app(
         expect,
         {
@@ -257,7 +257,7 @@ for (const winCodeSign of winCodeSignVersions) {
       )
     )
 
-    test.ifNotLinux("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
+    test("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
       app(
         expect,
         {
