@@ -1,5 +1,30 @@
 # app-builder-lib
 
+## 26.10.0
+
+### Minor Changes
+
+- Feat: migrate `electronDownload` to use `electron/get` official package. provides much better support for mirrors _[`#8827`](https://github.com/electron-userland/electron-builder/pull/8827) [`c82bec1`](https://github.com/electron-userland/electron-builder/commit/c82bec161d07b1df8adc5cd80a495c4ff0829373) [@mmaietta](https://github.com/mmaietta)_
+
+### Patch Changes
+
+- Chore: adding hardening to resolving scripts to be within the workspace directory, utilize deepAssign helper utility, and escape command used within node module collector _[`#9712`](https://github.com/electron-userland/electron-builder/pull/9712) [`b13aa95`](https://github.com/electron-userland/electron-builder/commit/b13aa953eafa03923474217c451e2799be33d33a) [@mmaietta](https://github.com/mmaietta)_
+
+<details><summary>Updated 4 dependencies</summary>
+
+<small>
+
+[`c82bec1`](https://github.com/electron-userland/electron-builder/commit/c82bec161d07b1df8adc5cd80a495c4ff0829373)
+
+</small>
+
+- `builder-util@26.10.0`
+- `dmg-builder@26.10.0`
+- `electron-builder-squirrel-windows@26.10.0`
+- `electron-publish@26.10.0`
+
+</details>
+
 ## 26.9.1
 
 ### Patch Changes
