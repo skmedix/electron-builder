@@ -19,11 +19,15 @@
 #   # Build both images and run all cores
 #   ./test/src/linux/test-snap.sh
 #
-#   # Run only the core24 pass (skip legacy image build + run)
-#   SKIP_LEGACY=1 ./test/src/linux/test-snap.sh
+#   # Run a single core (useful for CI matrix jobs)
+#   SNAP_CORE=core24  ./test/src/linux/test-snap.sh
+#   SNAP_CORE=core22  ./test/src/linux/test-snap.sh
+#   SNAP_CORE=core20  ./test/src/linux/test-snap.sh
+#   SNAP_CORE=core18  ./test/src/linux/test-snap.sh
 #
-#   # Run only the legacy pass (skip core24 image build + run)
-#   SKIP_CORE24=1 ./test/src/linux/test-snap.sh
+#   # Skip one pass while running the other (legacy flags, still supported)
+#   SKIP_LEGACY=1  ./test/src/linux/test-snap.sh   # core24 only
+#   SKIP_CORE24=1  ./test/src/linux/test-snap.sh   # core18/20/22 only
 #
 #   # Pass extra docker flags (e.g. a proxy)
 #   ADDITIONAL_DOCKER_ARGS="-e http_proxy=http://..." ./test/src/linux/test-snap.sh
@@ -83,32 +87,44 @@ COMMON_DOCKER_ARGS="--privileged \
   -v ${SNAPCRAFT_LOG_DIR}:/root/.local/state/snapcraft/log \
   ${ADDITIONAL_DOCKER_ARGS:-}"
 
-# ── Pass 1: legacy cores (core18 / core20 / core22) via snapcraft 7 ──────────
+# ── helpers ───────────────────────────────────────────────────────────────────
 
-if [[ -z "${SKIP_LEGACY:-}" ]]; then
+run_pass() {
+  local cores="$1"       # e.g. "core18,core20,core22" or "core24"
+  local dockerfile="$2"  # e.g. "dockerfile-snapcraft-legacy"
+  local image_tag="$3"   # e.g. "snapcraft-legacy-test"
+
   docker build \
     --platform=linux/amd64 \
-    -f "$CWD/dockerfile-snapcraft-legacy" \
-    -t snapcraft-legacy-test \
+    -f "$CWD/$dockerfile" \
+    -t "$image_tag" \
     "$REPO_ROOT"
 
-  TEST_RUNNER_IMAGE_TAG="snapcraft-legacy-test" \
-    ADDITIONAL_DOCKER_ARGS="$COMMON_DOCKER_ARGS -e SNAP_TEST_CORES=core18,core20,core22" \
+  TEST_RUNNER_IMAGE_TAG="$image_tag" \
+    ADDITIONAL_DOCKER_ARGS="$COMMON_DOCKER_ARGS -e SNAP_TEST_CORES=$cores" \
     pnpm test-linux \
   || { dump_snapcraft_logs "$SNAPCRAFT_LOG_DIR"; exit 1; }
-fi
+}
 
-# ── Pass 2: core24 via snapcraft 8 ────────────────────────────────────────────
+# ── dispatch ──────────────────────────────────────────────────────────────────
+# Set SNAP_CORE to test a single core (ideal for CI matrix jobs).
+# Leave unset (or "all") to run every pass sequentially.
 
-if [[ -z "${SKIP_CORE24:-}" ]]; then
-  docker build \
-    --platform=linux/amd64 \
-    -f "$CWD/dockerfile-snapcraft" \
-    -t snapcraft-core24-test \
-    "$REPO_ROOT"
-
-  TEST_RUNNER_IMAGE_TAG="snapcraft-core24-test" \
-    ADDITIONAL_DOCKER_ARGS="$COMMON_DOCKER_ARGS -e SNAP_TEST_CORES=core24" \
-    pnpm test-linux \
-  || { dump_snapcraft_logs "$SNAPCRAFT_LOG_DIR"; exit 1; }
-fi
+case "${SNAP_CORE:-all}" in
+  core18|core20|core22)
+    run_pass "${SNAP_CORE}" "dockerfile-snapcraft-legacy" "snapcraft-legacy-test"
+    ;;
+  core24)
+    run_pass "core24" "dockerfile-snapcraft" "snapcraft-core24-test"
+    ;;
+  all)
+    [[ -z "${SKIP_LEGACY:-}" ]] && \
+      run_pass "core18,core20,core22" "dockerfile-snapcraft-legacy" "snapcraft-legacy-test"
+    [[ -z "${SKIP_CORE24:-}" ]] && \
+      run_pass "core24" "dockerfile-snapcraft" "snapcraft-core24-test"
+    ;;
+  *)
+    echo "Unknown SNAP_CORE=${SNAP_CORE}. Valid values: core18 core20 core22 core24 (or unset for all)." >&2
+    exit 1
+    ;;
+esac
