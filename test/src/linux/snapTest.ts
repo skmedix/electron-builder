@@ -2,7 +2,11 @@ import { Arch, Platform } from "electron-builder"
 import { outputFile } from "fs-extra"
 import * as path from "path"
 import { app, appThrows, assertPack, EXTENDED_TIMEOUT, snapTarget } from "../helpers/packTester"
-import { hasSnapInstalled } from "./snapHeavyTest"
+import * as which from "which"
+
+// Inline so snapTest.ts does NOT import from snapHeavyTest.ts — importing that file
+// causes all its describe() blocks to execute here, registering heavy tests twice.
+const hasSnapInstalled = () => process.env.RUN_SNAP_TESTS === "true" || which.sync("snap", { nothrow: true }) != null || which.sync("snapcraft", { nothrow: true }) != null
 
 describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EXTENDED_TIMEOUT }, () => {
   test("snap", ({ expect }) =>
@@ -404,6 +408,8 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap", { sequential: true, timeout: EX
         productName: "Sep",
         snapcraft: {
           base: "core24",
+          // extensions: [] opts out of gnome; without it isHostMode()=false adds gnome by default
+          core24: { extensions: [] },
         },
       },
       effectiveOptionComputed: async ({ snap }) => {

@@ -18,7 +18,10 @@ import { launchSnapBinary } from "../helpers/launchAppCrossPlatform"
 export const hasSnapInstalled = () => process.env.RUN_SNAP_TESTS === "true" || which.sync("snap", { nothrow: true }) != null || which.sync("snapcraft", { nothrow: true }) != null
 
 // Whether install+launch tests should run. Requires unsquashfs on PATH (squashfs-tools).
-const canRunInstallTests = () => process.platform === "linux" && which.sync("unsquashfs", { nothrow: true }) != null
+// Excluded inside Docker containers: test-snap.sh always sets RUN_SNAP_TESTS=true there,
+// and Docker images use snapcraft 7 which cannot build core24 snaps correctly. Install+launch
+// tests are only meaningful on the native CI runner where the full environment is available.
+const canRunInstallTests = () => process.platform === "linux" && process.env.RUN_SNAP_TESTS !== "true" && which.sync("unsquashfs", { nothrow: true }) != null
 
 // Optional core filter: SNAP_TEST_CORES=core24  (comma-separated)
 // When unset every core is tested.
