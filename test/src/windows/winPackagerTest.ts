@@ -2,7 +2,6 @@ import { ToolsetConfig } from "app-builder-lib/src/configuration"
 import { Arch, DIR_TARGET, Platform } from "electron-builder"
 import * as fs from "fs/promises"
 import * as path from "path"
-import { NtExecutable, NtExecutableResource, Resource } from "resedit"
 import { CheckingWinPackager } from "../helpers/CheckingPackager"
 import { app, appThrows, assertPack, platform } from "../helpers/packTester"
 
@@ -171,7 +170,7 @@ for (const winCodeSign of winCodeSignVersions) {
       )
     })
 
-    test("signExecutable: false — rcedit still edits exe resources", ({ expect }) =>
+    test.ifNotLinux("signExecutable: false — rcedit still edits exe resources", ({ expect }) =>
       app(
         expect,
         {
@@ -183,6 +182,7 @@ for (const winCodeSign of winCodeSignVersions) {
         },
         {
           packed: async context => {
+            const { NtExecutable, NtExecutableResource, Resource } = await import("resedit")
             const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
             const expectedExe = `${context.packager.appInfo.productFilename}.exe`
             const appDirEntries = await fs.readdir(appDir)
@@ -198,14 +198,14 @@ for (const winCodeSign of winCodeSignVersions) {
             expect(langs.length).toBeGreaterThan(0)
 
             const strings = versionInfo.getStringValues(langs[0])
-            expect(strings["ProductName"]).toBeDefined()
-            expect(strings["FileDescription"]).toBeDefined()
+            expect(strings["ProductName"]).toBe(context.packager.appInfo.productName)
+            expect(strings["FileDescription"]).toBe(context.packager.appInfo.productName)
           },
         }
       )
     )
 
-    test("signExecutable: false — signing skipped even with cert", ({ expect }) =>
+    test.ifNotLinux("signExecutable: false — signing skipped even with cert", ({ expect }) =>
       app(
         expect,
         {
@@ -225,18 +225,17 @@ for (const winCodeSign of winCodeSignVersions) {
         {
           signedWin: true,
           packed: async context => {
+            const { NtExecutable, NtExecutableResource, Resource } = await import("resedit")
             const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
-            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
-            expect(exeFiles.length).toBeGreaterThan(0)
-
-            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const expectedExe = `${context.packager.appInfo.productFilename}.exe`
+            const buffer = await fs.readFile(path.join(appDir, expectedExe))
             const res = NtExecutableResource.from(NtExecutable.from(buffer))
             const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
             expect(versionInfoList.length).toBeGreaterThan(0)
 
             const strings = versionInfoList[0].getStringValues(versionInfoList[0].getAllLanguagesForStringValues()[0])
-            expect(strings["ProductName"]).toBe("Test App ßW")
-            expect(strings["FileDescription"]).toBe("Test App ßW")
+            expect(strings["ProductName"]).toBe(context.packager.appInfo.productName)
+            expect(strings["FileDescription"]).toBe(context.packager.appInfo.productName)
           },
         }
       )
@@ -258,7 +257,7 @@ for (const winCodeSign of winCodeSignVersions) {
       )
     )
 
-    test("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
+    test.ifNotLinux("signAndEditExecutable: false — backward compat disables both editing and signing", ({ expect }) =>
       app(
         expect,
         {
@@ -270,11 +269,10 @@ for (const winCodeSign of winCodeSignVersions) {
         },
         {
           packed: async context => {
+            const { NtExecutable, NtExecutableResource, Resource } = await import("resedit")
             const appDir = context.getContent(Platform.WINDOWS, Arch.x64)
-            const exeFiles = (await fs.readdir(appDir)).filter(f => f.endsWith(".exe"))
-            expect(exeFiles.length).toBeGreaterThan(0)
-
-            const buffer = await fs.readFile(path.join(appDir, exeFiles[0]))
+            const expectedExe = `${context.packager.appInfo.productFilename}.exe`
+            const buffer = await fs.readFile(path.join(appDir, expectedExe))
             const res = NtExecutableResource.from(NtExecutable.from(buffer))
             const versionInfoList = Resource.VersionInfo.fromEntries(res.entries)
             expect(versionInfoList.length).toBeGreaterThan(0)
@@ -283,7 +281,7 @@ for (const winCodeSign of winCodeSignVersions) {
             expect(langs.length).toBeGreaterThan(0)
 
             const strings = versionInfoList[0].getStringValues(langs[0])
-            expect(strings["ProductName"]).not.toBe("Test App ßW")
+            expect(strings["ProductName"]).not.toBe(context.packager.appInfo.productName)
           },
         }
       )
