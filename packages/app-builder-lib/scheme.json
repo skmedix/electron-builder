@@ -7069,7 +7069,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "core18; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`."
         },
         "core20": {
           "anyOf": [
@@ -7079,7 +7080,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "core20; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`."
         },
         "core22": {
           "anyOf": [
@@ -7089,7 +7091,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "core22; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`."
         },
         "core24": {
           "anyOf": [
@@ -7099,7 +7102,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "description": "[Beta support] Options for building a core24 snap. This is a fresh, forward-looking interface that does not extend the legacy `SnapBaseOptions`.\nInherits desktop-entry fields from `CommonLinuxOptions` (categories, mimeTypes, executableArgs, etc.) and publish configuration from `TargetSpecificOptions`."
         },
         "custom": {
           "anyOf": [
@@ -7110,7 +7114,7 @@
               "type": "null"
             }
           ],
-          "description": "Pass-through custom snap configuration. electron-builder will read the\nsnapcraft.yaml at `yamlPath` and use it verbatim — no plugs, extensions,\norganize mappings, or desktop files are injected."
+          "description": "[Beta support] Pass-through custom snap configuration. electron-builder will read the\nsnapcraft.yaml at `yamlPath` and use it verbatim — no plugs, extensions,\norganize mappings, or desktop files are injected."
         },
         "publish": {
           "anyOf": [

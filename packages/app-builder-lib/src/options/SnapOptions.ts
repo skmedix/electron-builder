@@ -10,14 +10,30 @@ export interface SnapcraftOptions extends TargetSpecificOptions {
    * A snap of type base to be used as the execution environment for this snap; can only select one core for target.
    */
   readonly base: "core18" | "core20" | "core22" | "core24" | "custom"
+  /**
+   * core18; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`.
+   */
   readonly core18?: SnapOptionsLegacy | null
+  /**
+   * core20; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`.
+   */
   readonly core20?: SnapOptionsLegacy | null
+  /**
+   * core22; Migrates configuration from the legacy `snap` field for backward compatibility, but only applies if the core is selected in `base`.
+   */
   readonly core22?: SnapOptionsLegacy | null
+
+  /**
+   * [Beta support] Options for building a core24 snap. This is a fresh, forward-looking interface that does not extend the legacy `SnapBaseOptions`.
+   * Inherits desktop-entry fields from `CommonLinuxOptions` (categories, mimeTypes, executableArgs, etc.) and publish configuration from `TargetSpecificOptions`.
+   * @beta
+   */
   readonly core24?: SnapOptions24 | null
   /**
-   * Pass-through custom snap configuration. electron-builder will read the
+   * [Beta support] Pass-through custom snap configuration. electron-builder will read the
    * snapcraft.yaml at `yamlPath` and use it verbatim — no plugs, extensions,
    * organize mappings, or desktop files are injected.
+   * @beta
    */
   readonly custom?: SnapOptionsCustom | null
 }
