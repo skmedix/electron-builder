@@ -2,4 +2,4 @@
 "app-builder-lib": minor
 ---
 
-feat(nsis): adding config property to allow disabling signing without disabling editing the executable
+feat(win): adding config property to allow disabling signing without disabling editing the executable

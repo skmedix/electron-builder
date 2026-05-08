@@ -6890,7 +6890,7 @@
         },
         "signExecutable": {
           "default": true,
-          "description": "Whether to sign the executable(s). Set to `false` to skip code signing while still\nediting executable resources (icon, metadata, etc. via rcedit).\nHas no effect if `signAndEditExecutable` is `false`.",
+          "description": "Whether to sign Windows executables and any additional files matched by `signExts`. Set to `false` to skip all Windows code signing while still\nediting executable resources (icon, metadata, etc. via rcedit).\nHas no effect if `signAndEditExecutable` is `false`.",
           "type": "boolean"
         },
         "signExts": {

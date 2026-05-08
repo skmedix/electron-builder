@@ -210,7 +210,14 @@ for (const winCodeSign of winCodeSignVersions) {
         {
           targets: Platform.WINDOWS.createTarget(["zip"], Arch.x64),
           config: {
-            win: { signExecutable: false },
+            win: {
+              signExecutable: false,
+              signtoolOptions: {
+                sign: () => {
+                  throw new Error("sign must not be called when signExecutable is false")
+                },
+              },
+            },
             toolsets: { winCodeSign },
           },
         },
@@ -246,7 +253,7 @@ for (const winCodeSign of winCodeSignVersions) {
           },
         },
         {},
-        error => expect(error.message).toContain("`signExecutable` and `forceCodeSigning` are mutually exclusive")
+        error => expect(error.message).toContain("`forceCodeSigning` is enabled")
       )
     )
 

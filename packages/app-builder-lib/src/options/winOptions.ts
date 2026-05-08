@@ -52,19 +52,20 @@ export interface WindowsConfiguration extends PlatformSpecificBuildOptions {
   readonly requestedExecutionLevel?: RequestedExecutionLevel | null
 
   /**
-   * Whether to sign and add metadata to executable.
+   * Whether to sign and add metadata to executable via `rcedit`.
    * Metadata includes information about the app name/description/version, publisher, copyright, etc.
    * This property also is responsible for adding the app icon and setting execution level.
+   * Set to `false` only if you need to fully disable rcedit-based resource editing.
+   * To skip only code signing while keeping resource editing, use `signExecutable: false` instead.
    * (Advanced option leveraging `rcedit`)
-   * @deprecated To only skip signing but still edit resources, set `signExecutable` to `false`. If requiring to NOT edit executable with `rcedit` in future major semver release, please open a GitHub issue.
    * @default true
    */
   readonly signAndEditExecutable?: boolean
 
   /**
-   * Whether to sign the executable(s). Set to `false` to skip code signing while still
-   * editing executable resources (icon, metadata, etc. via rcedit).
-   * Has no effect if `signAndEditExecutable` is `false`.
+   * Whether to sign Windows executables and any additional files matched by `signExts`.
+   * Set to `false` to skip all Windows code signing while still editing executable resources
+   * (icon, metadata, etc. via rcedit). Has no effect if `signAndEditExecutable` is `false`.
    * @default true
    */
   readonly signExecutable?: boolean

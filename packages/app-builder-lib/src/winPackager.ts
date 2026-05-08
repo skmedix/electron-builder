@@ -277,13 +277,15 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
 
   protected async signApp(packContext: AfterPackContext, isAsar: boolean): Promise<boolean> {
     const exeFileName = `${this.appInfo.productFilename}.exe`
+    const signingDisabled =
+      this.platformSpecificBuildOptions.signExecutable === false || this.platformSpecificBuildOptions.signAndEditExecutable === false
+    if (signingDisabled && this.forceCodeSigning) {
+      throw new InvalidConfigurationError(
+        "Signing is disabled (`signExecutable: false` or `signAndEditExecutable: false`) but `forceCodeSigning` is enabled. Remove one of these options."
+      )
+    }
     if (this.platformSpecificBuildOptions.signAndEditExecutable === false) {
       return false
-    }
-    if (this.platformSpecificBuildOptions.signExecutable === false && this.forceCodeSigning) {
-      throw new InvalidConfigurationError(
-        "`signExecutable` and `forceCodeSigning` are mutually exclusive: you cannot disable signing while also requiring it. Remove one of these options."
-      )
     }
 
     const files = await readdir(packContext.appOutDir)
