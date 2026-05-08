@@ -234,7 +234,13 @@ export async function buildSnap(options: BuildSnapOptions): Promise<string> {
     validateSnapcraftConfig(snapcraftConfig)
 
     progress.logStage("preparing", "validating with snapcraft CLI", 35)
-    await validateSnapcraftYamlWithCLI(stageDir)
+    try {
+      await validateSnapcraftYamlWithCLI(stageDir)
+    } catch (validationError: any) {
+      // Non-fatal: expand-extensions can fail in some environments (e.g. no store
+      // access, host-mode context). The actual snapcraft pack will surface real errors.
+      log.warn({ error: validationError.message }, "snapcraft CLI pre-validation failed (non-fatal), continuing build")
+    }
 
     // Step 5: Detect platform and determine build strategy
     progress.logStage("preparing", "detecting platform and build method", 50)

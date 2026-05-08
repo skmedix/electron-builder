@@ -81,10 +81,12 @@ function assertSnapStructure(primeDir: string, appName: string, binaryPath: stri
 /**
  * Full install+launch integration test for a single snap.
  * Build → extract → assert structure → run binary --version.
+ *
+ * All file operations MUST happen inside the packed callback: assertPack cleans
+ * up outDir (and everything inside it, including extractDir) after the callback
+ * returns. Running chmod/launch after assertPack would hit a deleted directory.
  */
 async function runInstallLaunchTest(expect: any, core: "core18" | "core20" | "core22" | "core24"): Promise<void> {
-  let extractDir: string | undefined
-
   await assertPack(
     expect,
     "test-app-one",
@@ -110,7 +112,7 @@ async function runInstallLaunchTest(expect: any, core: "core18" | "core20" | "co
         log.info({ snapPath }, "snap artifact found")
 
         // ── 2. extract and inspect structure ──────────────────────────────
-        extractDir = path.join(path.dirname(snapPath), "extracted-snap")
+        const extractDir = path.join(path.dirname(snapPath), "extracted-snap")
         extractSnap(snapPath, extractDir)
 
         const binaryPath = resolveSnapBinaryPath(extractDir, "se-wo-template", core)
@@ -126,23 +128,16 @@ async function runInstallLaunchTest(expect: any, core: "core18" | "core20" | "co
         expect(desktopContent).toContain("Type=Application")
         expect(desktopContent).toContain("Exec=")
         log.info({ extractDir }, "snap structure validated")
+
+        // ── 3. launch binary (must stay inside packed callback) ────────────
+        execSync(`chmod +x "${binaryPath}"`)
+        const output = launchSnapBinary(binaryPath)
+        // Electron responds to --version by printing its version (e.g. "v32.0.0") and exiting 0
+        expect(output).toMatch(/v?\d+\.\d+\.\d+/)
+        log.info({ output: output.trim() }, "snap binary launched successfully")
       },
     }
   )
-
-  if (!extractDir) {
-    throw new Error("snap extraction was not performed (packed callback did not run)")
-  }
-
-  // ── 3. launch binary ──────────────────────────────────────────────────────
-  // extractDir lives inside outDir which assertPack may clean up, but in practice
-  // extractSnap writes via unsquashfs to a path that persists until the OS clears it.
-  const binaryPath = resolveSnapBinaryPath(extractDir, "se-wo-template", core)
-  execSync(`chmod +x "${binaryPath}"`)
-  const output = launchSnapBinary(binaryPath)
-  // Electron responds to --version by printing its version (e.g. "v32.0.0") and exiting 0
-  expect(output).toMatch(/v?\d+\.\d+\.\d+/)
-  log.info({ output: output.trim() }, "snap binary launched successfully")
 }
 
 // ─── test suites ─────────────────────────────────────────────────────────────
@@ -158,7 +153,11 @@ describe.heavy.ifEnv(hasSnapInstalled())("snap heavy", { sequential: true, timeo
         config: {
           extraMetadata: { name: "se-wo-template" },
           productName: "Snap Electron App (full build)",
-          snapcraft: { base: core },
+          snapcraft: {
+            base: core,
+            // core24 gnome extension is incompatible with SNAPCRAFT_BUILD_ENVIRONMENT=host (set in Docker)
+            ...(core === "core24" ? { core24: { useDestructiveMode: true } } : {}),
+          },
           electronFuses: {
             runAsNode: true,
             enableCookieEncryption: true,
@@ -204,8 +203,6 @@ describe.heavy.ifLinux.ifEnv(hasSnapInstalled() && canRunInstallTests())("snap c
   })
 
   test("core24 destructive-mode (no gnome extension)", async ({ expect }) => {
-    let snapPath: string | undefined
-
     await assertPack(
       expect,
       "test-app-one",
@@ -226,32 +223,27 @@ describe.heavy.ifLinux.ifEnv(hasSnapInstalled() && canRunInstallTests())("snap c
       },
       {
         packed: async context => {
-          snapPath = await findSnapArtifact(context.outDir)
+          const snapPath = await findSnapArtifact(context.outDir)
+          expect(existsSync(snapPath)).toBe(true)
+
+          const extractDir = path.join(path.dirname(snapPath), "extracted-snap-destructive")
+          extractSnap(snapPath, extractDir)
+
+          const snapYaml = readFileSync(path.join(extractDir, "meta", "snap.yaml"), "utf8")
+          expect(snapYaml).toContain("name: se-wo-template")
+          expect(snapYaml).toContain("base: core24")
+          // gnome extension must not be present in destructive-mode builds
+          expect(snapYaml).not.toContain("gnome")
+
+          const binaryPath = resolveSnapBinaryPath(extractDir, "se-wo-template", "core24")
+          expect(existsSync(binaryPath)).toBe(true)
+
+          execSync(`chmod +x "${binaryPath}"`)
+          const output = launchSnapBinary(binaryPath)
+          expect(output).toMatch(/v?\d+\.\d+\.\d+/)
         },
       }
     )
-
-    if (!snapPath) {
-      throw new Error("snap artifact path was not captured")
-    }
-
-    expect(existsSync(snapPath)).toBe(true)
-
-    const extractDir = path.join(path.dirname(snapPath), "extracted-snap-destructive")
-    extractSnap(snapPath, extractDir)
-
-    const snapYaml = readFileSync(path.join(extractDir, "meta", "snap.yaml"), "utf8")
-    expect(snapYaml).toContain("name: se-wo-template")
-    expect(snapYaml).toContain("base: core24")
-    // gnome extension must not be present in destructive-mode builds
-    expect(snapYaml).not.toContain("gnome")
-
-    const binaryPath = resolveSnapBinaryPath(extractDir, "se-wo-template", "core24")
-    expect(existsSync(binaryPath)).toBe(true)
-
-    execSync(`chmod +x "${binaryPath}"`)
-    const output = launchSnapBinary(binaryPath)
-    expect(output).toMatch(/v?\d+\.\d+\.\d+/)
   })
 
   test("core24 with custom stagePackages", async ({ expect }) => {
