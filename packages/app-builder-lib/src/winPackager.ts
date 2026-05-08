@@ -1,10 +1,11 @@
-import { Arch, CopyFileTransformer, executeAppBuilder, exists, FileTransformer, InvalidConfigurationError, log, use, walk } from "builder-util"
+import { Arch, CopyFileTransformer, exists, FileTransformer, InvalidConfigurationError, log, walk } from "builder-util"
 import { Nullish } from "builder-util-runtime"
 import { isCI } from "ci-info"
 import { createHash } from "crypto"
-import { readdir } from "fs/promises"
+import { readFile, readdir, writeFile } from "fs/promises"
 import { Lazy } from "lazy-val"
 import * as path from "path"
+import { Data, NtExecutable, NtExecutableResource, Resource } from "resedit"
 import { readAsarHeader } from "./asar/asar"
 import { SignManager } from "./codeSign/signManager"
 import { signWindows, WindowsSignOptions } from "./codeSign/windowsCodeSign"
@@ -22,12 +23,53 @@ import { NsisTarget } from "./targets/nsis/NsisTarget"
 import { AppPackageHelper, CopyElevateHelper } from "./targets/nsis/nsisUtil"
 import { WebInstallerTarget } from "./targets/nsis/WebInstallerTarget"
 import { createCommonTarget } from "./targets/targetFactory"
-import { getRceditBundle } from "./toolsets/windows"
 import { BuildCacheManager, digest } from "./util/cacheManager"
 import { isBuildCacheEnabled } from "./util/flags"
 import { time } from "./util/timer"
 import { getWindowsVm, VmManager } from "./vm/vm"
-import { execWine } from "./wine"
+
+interface ResourceEditOptions {
+  file: string
+  versionStrings: Record<string, string>
+  fileVersion: string
+  productVersion: string
+  requestedExecutionLevel?: RequestedExecutionLevel | null
+  iconPath?: string | null
+}
+
+async function editWindowsResources(opts: ResourceEditOptions): Promise<void> {
+  const buffer = await readFile(opts.file)
+  const executable = NtExecutable.from(buffer)
+  const res = NtExecutableResource.from(executable)
+
+  const viList = Resource.VersionInfo.fromEntries(res.entries)
+  const vi = viList.length > 0 ? viList[0] : Resource.VersionInfo.createEmpty()
+  const lang = vi.getAllLanguagesForStringValues()[0] ?? { lang: 0x0409, codepage: 1200 }
+
+  vi.setStringValues(lang, opts.versionStrings)
+  vi.setFileVersion(opts.fileVersion)
+  vi.setProductVersion(opts.productVersion)
+  vi.outputToResourceEntries(res.entries)
+
+  if (opts.iconPath) {
+    const iconBuf = await readFile(opts.iconPath)
+    const iconFile = Data.IconFile.from(iconBuf)
+    Resource.IconGroupEntry.replaceIconsForResource(res.entries, 1, lang.lang, iconFile.icons.map(i => i.data))
+  }
+
+  if (opts.requestedExecutionLevel && opts.requestedExecutionLevel !== "asInvoker") {
+    const manifestEntry = res.entries.find(e => e.type === 24 && e.id === 1)
+    if (manifestEntry) {
+      let xml = Buffer.from(manifestEntry.bin).toString("utf-8")
+      xml = xml.replace(/(<requestedExecutionLevel[^>]*\blevel=")[^"]*(")/i, `$1${opts.requestedExecutionLevel}$2`)
+      const newBuf = Buffer.from(xml, "utf-8")
+      manifestEntry.bin = newBuf.buffer.slice(newBuf.byteOffset, newBuf.byteOffset + newBuf.byteLength) as ArrayBuffer
+    }
+  }
+
+  res.outputResource(executable)
+  await writeFile(opts.file, Buffer.from(executable.generate()))
+}
 
 export class WinPackager extends PlatformPackager<WindowsConfiguration> {
   _iconPath = new Lazy(() => this.getOrConvertIcon("ico"))
@@ -153,38 +195,37 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
 
     const files: Array<string> = []
 
-    const args = [
-      file,
-      "--set-version-string",
-      "FileDescription",
-      appInfo.productName,
-      "--set-version-string",
-      "ProductName",
-      appInfo.productName,
-      "--set-version-string",
-      "LegalCopyright",
-      appInfo.copyright,
-      "--set-file-version",
-      appInfo.shortVersion || appInfo.buildVersion,
-      "--set-product-version",
-      appInfo.shortVersionWindows || appInfo.getVersionInWeirdWindowsForm(),
-    ]
+    const versionStrings: Record<string, string> = {
+      FileDescription: appInfo.productName,
+      ProductName: appInfo.productName,
+      LegalCopyright: appInfo.copyright,
+    }
 
     if (internalName != null) {
-      args.push("--set-version-string", "InternalName", internalName, "--set-version-string", "OriginalFilename", "")
+      versionStrings.InternalName = internalName
+      versionStrings.OriginalFilename = ""
     }
 
-    if (requestedExecutionLevel != null && requestedExecutionLevel !== "asInvoker") {
-      args.push("--set-requested-execution-level", requestedExecutionLevel)
+    if (appInfo.companyName != null) {
+      versionStrings.CompanyName = appInfo.companyName
+    }
+    if (this.platformSpecificBuildOptions.legalTrademarks != null) {
+      versionStrings.LegalTrademarks = this.platformSpecificBuildOptions.legalTrademarks
     }
 
-    use(appInfo.companyName, it => args.push("--set-version-string", "CompanyName", it))
-    use(this.platformSpecificBuildOptions.legalTrademarks, it => args.push("--set-version-string", "LegalTrademarks", it))
     const iconPath = await this.getIconPath()
-    use(iconPath, it => {
-      files.push(it)
-      args.push("--set-icon", it)
-    })
+    if (iconPath != null) {
+      files.push(iconPath)
+    }
+
+    const opts: ResourceEditOptions = {
+      file,
+      versionStrings,
+      fileVersion: appInfo.shortVersion || appInfo.buildVersion,
+      productVersion: appInfo.shortVersionWindows || appInfo.getVersionInWeirdWindowsForm(),
+      requestedExecutionLevel,
+      iconPath,
+    }
 
     const config = this.config
     const cscInfoForCacheDigest = !isBuildCacheEnabled() || isCI || config.electronDist != null ? null : await (await this.signingManager.value).cscInfo.value
@@ -200,7 +241,7 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
       const hash = createHash("sha512")
       hash.update(config.electronVersion || "no electronVersion")
       hash.update(JSON.stringify(this.platformSpecificBuildOptions))
-      hash.update(JSON.stringify(args))
+      hash.update(JSON.stringify(opts))
       hash.update(this.platformSpecificBuildOptions.signtoolOptions?.certificateSha1 || "no certificateSha1")
       hash.update(this.platformSpecificBuildOptions.signtoolOptions?.certificateSubjectName || "no subjectName")
 
@@ -219,15 +260,8 @@ export class WinPackager extends PlatformPackager<WindowsConfiguration> {
       timer.end()
     }
 
-    const timer = time("wine&sign")
-    // rcedit crashed of executed using wine, resourcehacker works
-    if (process.platform === "win32" || process.platform === "darwin") {
-      await executeAppBuilder(["rcedit", "--args", JSON.stringify(args)], undefined /* child-process */, {}, 3 /* retry three times */)
-    } else if (this.info.framework.name === "electron") {
-      const vendor = await getRceditBundle(this.config.toolsets?.winCodeSign)
-      await execWine(vendor.x86, vendor.x64, args)
-    }
-
+    const timer = time("resource-edit&sign")
+    await editWindowsResources(opts)
     await this.signIf(file)
     timer.end()
 
