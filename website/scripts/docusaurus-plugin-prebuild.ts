@@ -145,7 +145,7 @@ export default async function prebuildPlugin(context: LoadContext): Promise<Plug
   // Clean up old API docs to prevent stale files from remaining if APIs are removed
   rmSync(join(siteDir, "docs/api"), { recursive: true, force: true })
 
-  execSync("node_modules/.bin/typedoc --options typedoc.json", {
+  execSync("typedoc --options typedoc.json", {
     cwd: siteDir,
     encoding: "utf-8",
     stdio: "inherit",
@@ -157,7 +157,7 @@ export default async function prebuildPlugin(context: LoadContext): Promise<Plug
   return {
     name: "electron-builder-prebuild",
     postBuild({ outDir }) {
-      execSync(`node_modules/.bin/pagefind --site "${outDir}"`, {
+      execSync(`pagefind --site "${outDir}"`, {
         cwd: siteDir,
         stdio: "inherit",
       })
